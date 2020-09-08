@@ -1,4 +1,4 @@
-pollutantmean <- function(directory, pollutant, id = 1:332) {
+pollutantmean <- function(directory, pollutant, id =1:332) {
     ## Set wd
     wd <- setwd(paste0("C:/Users/Teolone/Desktop/",directory))
     ## Create list files           
@@ -8,6 +8,6 @@ pollutantmean <- function(directory, pollutant, id = 1:332) {
     ## Union files
     union <- do.call(rbind,csv)
     ## Calculate mean
-    mean(as.numeric(union[,pollutant]),na.rm = TRUE)
+    mean(union[,pollutant],na.rm = TRUE)
 }
-pollutantmean("specdata","nitrate",1:100)
+pollutantmean("specdata","sulfate",1:10)
