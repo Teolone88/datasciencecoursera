@@ -6,9 +6,9 @@ complete <- function(directory, id = 1:332) {
     ## Create new tmp dataframe
     df <- data.frame(id=NA, nobs=NA)
     ##Loop to index IDs
-    for (i in id) {
-        df[i,1] <- i
-        df[i,2] <- sum(complete.cases(read.csv(list[i],, na.strings = c("NA","NaN", " "))))
+    for (i in 1:length(id)) {
+        df[i,1] <- id[i]
+        df[i,2] <- sum(complete.cases(read.csv(list[id[i]])))
     }
     df
 }
