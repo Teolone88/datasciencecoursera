@@ -31,7 +31,7 @@ best <- function(iso, disease) {
         col <- 23
     }
     ## Subset result with the state argument
-    result <- om[om$State == "SC", ]
+    result <- om[om$State == iso, ]
     ## Convert column number of the disease in numerical from character
     result[,col] <- as.numeric(result[,col])
     ## Assign a variable with the min value for the mortal rate, removing NAs
