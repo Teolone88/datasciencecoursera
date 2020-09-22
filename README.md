@@ -1,5 +1,19 @@
 # Data Science Specialization | John Hopkins Coursera
 
+Course | Certificate
+--- | --- 
+The Data Scientist’s Toolbox | [Link](https://www.coursera.org/account/accomplishments/verify/B5CDAAH836UW)
+R Programming | [Link](https://www.coursera.org/account/accomplishments/verify/WJH5PTDX7VJA)
+Getting and Cleaning Data | [Link]
+Exploratory Data Analysis | [Link]
+Reproducible Research | [Link]
+Statistical Inference | [Link]
+Regression Models | [Link]
+Practical Machine Learning | [Link]
+Developing Data Products | [Link]
+Data Science Capstone | [Link]
+
+
 ## Author
 Github Username | Profile Page | LinkedIn
 --- | --- | ---
