@@ -12,7 +12,7 @@ https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FPUMSDataDict06.pdf
 
 How many housing units in this survey were worth more than $1,000,000?
 
-```R
+```{r}
 library(data.table)
 housing <- data.table::fread("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv")
 
@@ -42,12 +42,12 @@ Read rows 18-23 and columns 7-15 into R and assign the result to a variable call
 dat
 
 What is the value of:
-```R
+```{r]
 sum(dat$Zip*dat$Ext,na.rm=T)
 ```
 (original data source: http://catalog.data.gov/dataset/natural-gas-acquisition-program)
 
-```R
+```{r}
 fileUrl <- "http://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FDATA.gov_NGAP.xlsx"
 download.file(fileUrl, destfile = paste0(getwd(), '/getdata%2Fdata%2FDATA.gov_NGAP.xlsx'), method = "curl")
 
@@ -68,7 +68,7 @@ How many restaurants have zipcode 21231?
 
 Use http instead of https, which caused the message Error: XML content does not seem to be XML: 'https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Frestaurants.xml'.
 
-```R
+```{r}
 # install.packages("XML")
 library("XML")
 fileURL<-"https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Frestaurants.xml"
@@ -95,11 +95,11 @@ DT
 
 Which of the following is the fastest way to calculate the average value of the variable
 
-pwgtp15
+`pwgtp15`
 
 broken down by sex using the data.table package?
 
-```R
+```{r}
 DT <- data.table::fread("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv")
 
 # Answer (fastest):
