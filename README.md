@@ -4,7 +4,7 @@ Course | Certificate
 --- | --- 
 The Data Scientist’s Toolbox | [Link](https://www.coursera.org/account/accomplishments/verify/B5CDAAH836UW)
 R Programming | [Link](https://www.coursera.org/account/accomplishments/verify/WJH5PTDX7VJA)
-Getting and Cleaning Data | [Link]
+Getting and Cleaning Data | [Link](https://www.coursera.org/account/accomplishments/verify/JZ7AZ2T327R8) 
 Exploratory Data Analysis | [Link]
 Reproducible Research | [Link]
 Statistical Inference | [Link]
