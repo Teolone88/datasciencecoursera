@@ -23,3 +23,5 @@ showMe <- function(cv){
 ```{r}
 showMe(p1(20))
 ```
+## Result
+![ColorRampScalePlot](/Exploratory%20Data%20Analysis/Assets/Rplot.jpeg)
