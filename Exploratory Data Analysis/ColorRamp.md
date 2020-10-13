@@ -7,7 +7,7 @@ p1 <- colorRampPalette(c("red","blue"))
 p2 <- colorRamp(c("red","blue"))
 ```
 ## Nicely grouped sets of colors are also available with the `RColorBrewer Package`
-![unchanged image](Assets/Brewer.jpg)
+![ColorRampScale](/Assets/Brewer.jpeg)
 
 
 ## Function to return image with color scaling (cv = color vector)
