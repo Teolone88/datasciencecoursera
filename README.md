@@ -1,4 +1,4 @@
-# Data Science Specialization | John Hopkins Coursera
+# Data Science Specialization | Johns Hopkins Coursera
 
 Course | Certificate
 --- | --- 
