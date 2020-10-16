@@ -1,4 +1,3 @@
-library(ggplot2)
 
 Sys.setlocale("LC_ALL", "English")
 ## Download file best practice
@@ -17,29 +16,36 @@ unzip(
 ## Read tables from unzipped RDS files
 NEI <- readRDS("./Unzipped/summarySCC_PM25.rds")
 SCC <- readRDS("./Unzipped/Source_Classification_Code.rds")
-## Merge NEI and SIC by SCC
+## Isolate motor vehicle sources
+## Identified `Mobile` word pattern for motor vehicles
+unique(SCC$EI.Sector)
+## Merge NEI and SCC by SCC
 mergeNEI <- merge(NEI, SCC, by = "SCC")
-## Isolate observations that contains Coal in SCC.Level.Four
-coalNEI <- grep("[Cc]oal", mergeNEI$SCC.Level.Four)
-mergeNEI1 <- mergeNEI[coalNEI,]
-## Aggregate the sum of Emissions per year and source
-mergeNEI1$Emissions <- as.integer(mergeNEI1$Emissions)
-sumNEI <- aggregate(mergeNEI1$Emissions, list(mergeNEI1$year), sum, na.rm = TRUE)
+colnames(mergeNEI)
+## Isolate columns of interest
+mergeNEI0 <- mergeNEI[,c(1,2,4,6,9)]
 ## Rename properly the col names
-colnames(sumNEI) <- c("Year","Tot_Emission")
-sumNEI$Year <- as.factor(sumNEI$Year)
-str(sumNEI)
+colnames(mergeNEI0) <- c("SCC","County", "Emission","Year","Application")
+mergeNEI0$Year <- as.factor(mergeNEI0$Year)
+## Isolate motor vehicles from Application with thee word `Mobile`
+motorNEI <- grep("[Mm]obile", mergeNEI0$Application)
+motorNEI <- mergeNEI0[motorNEI,]
+## Aggregate the sum of Emissions per year and source for Baltimore in Los Angeles
+motorNEI$Emission <- as.integer(motorNEI$Emission)
+motorNEIagg <- aggregate(motorNEI$Emission[motorNEI$County == "06037"], list(motorNEI$Year[motorNEI$County == "06037"]), sum, na.rm = TRUE)
+## Rename after aggregation
+colnames(motorNEIagg) <- c("Year", "Emission")
 ## Plot with ggplot
+par(mfrow=c(1,2))
 png(file = "plot5.png",
     width = 480,
     height = 480)
 ## Barplot selected to better visualize the trend
 ## Measure adjusted to `Kg` from `Grams`
-## Set stat to `identity` to override the the count with the value of the sum
-ggplot(data = sumNEI, aes(x = Year, y = Tot_Emission/10^3))+
-    geom_bar(stat = "identity", fill = "lightblue")+
-    labs(x="Years", y= "Emissions (Kg)")+ 
-    labs(title = expression("PM"[2.5]*" Emissions, in US from 1999-2008 by Coal based combustion"))+
-    theme_bw()+
-    geom_text(aes(label = Tot_Emission/10^3), position = position_dodge(0.9), vjust = -.3, size = 3)
+barplot(
+    (motorNEIagg$Emission)/10^3,
+    names.arg= motorNEIagg$Year,
+    xlab="Year",
+    ylab="PM2.5 Emissions (Kg)",
+    main=expression("Baltimore motor vehicles")
 dev.off()
