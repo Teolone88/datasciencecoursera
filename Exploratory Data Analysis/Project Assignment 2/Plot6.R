@@ -26,7 +26,7 @@ mergeNEI$Year <- as.factor(mergeNEI$Year)
 ## Isolate motor vehicles from Application with thee word `Mobile`
 motorNEI <- grep("[Mm]obile", mergeNEI$Application)
 motorNEI <- mergeNEI[motorNEI,]
-## Aggregate the sum of Emissions per year and source for Baltimore in Los Angeles
+## Aggregate the sum of Emissions per year and source for Baltimore and Los Angeles
 motorNEI$Emission <- as.integer(motorNEI$Emission)
 motorNEIagg <- aggregate(motorNEI$Emission[motorNEI$County == "06037"], list(motorNEI$Year[motorNEI$County == "06037"]), sum, na.rm = TRUE)
 motorNEIagg1 <- aggregate(motorNEI$Emission[motorNEI$County == "24510"], list(motorNEI$Year[motorNEI$County == "24510"]), sum, na.rm = TRUE)
