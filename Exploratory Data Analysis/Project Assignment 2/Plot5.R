@@ -32,7 +32,7 @@ motorNEI <- grep("[Mm]obile", mergeNEI0$Application)
 motorNEI <- mergeNEI0[motorNEI,]
 ## Aggregate the sum of Emissions per year and source for Baltimore in Los Angeles
 motorNEI$Emission <- as.integer(motorNEI$Emission)
-motorNEIagg <- aggregate(motorNEI$Emission[motorNEI$County == "06037"], list(motorNEI$Year[motorNEI$County == "06037"]), sum, na.rm = TRUE)
+motorNEIagg <- aggregate(motorNEI$Emission[motorNEI$County == "24510"], list(motorNEI$Year[motorNEI$County == "24510"]), sum, na.rm = TRUE)
 ## Rename after aggregation
 colnames(motorNEIagg) <- c("Year", "Emission")
 ## Plot with ggplot
