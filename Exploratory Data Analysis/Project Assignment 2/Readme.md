@@ -33,5 +33,8 @@ You must address the following questions and tasks in your exploratory analysis.
 - Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, which of these four sources have seen decreases in emissions from 1999-2008 for Baltimore City? Which have seen increases in emissions from 1999-2008? Use the ggplot2 plotting system to make a plot answer this question. </br>
 ![plot of chunk unnamed-chunk-3](../Project%20Assignment%202/Assets/plot3.png) 
 - Across the United States, how have emissions from coal combustion-related sources changed from 1999-2008? </br>
+![plot of chunk unnamed-chunk-4](../Project%20Assignment%202/Assets/plot4.png) 
 - How have emissions from motor vehicle sources changed from 1999-2008 in Baltimore City? </br>
+![plot of chunk unnamed-chunk-5](../Project%20Assignment%202/Assets/plot5.png) 
 - Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (`fips == “06037”`). Which city has seen greater changes over time in motor vehicle emissions? </br>
+![plot of chunk unnamed-chunk-6](../Project%20Assignment%202/Assets/plot6.png) 
