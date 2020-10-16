@@ -1,3 +1,4 @@
+
 Sys.setlocale("LC_ALL", "English")
 ## Download file best practice
 ##if (!file.exists("./downloaded_files")) {
@@ -20,13 +21,16 @@ SCC <- readRDS("./Unzipped/Source_Classification_Code.rds")
 unique(SCC$EI.Sector)
 ## Merge NEI and SCC by SCC
 mergeNEI <- merge(NEI, SCC, by = "SCC")
+colnames(mergeNEI)
+## Isolate columns of interest
+mergeNEI0 <- mergeNEI[,c(1,2,4,6,9)]
 ## Rename properly the col names
-colnames(mergeNEI) <- c("SCC","County", "Emission","Year","Application")
-mergeNEI$Year <- as.factor(mergeNEI$Year)
+colnames(mergeNEI0) <- c("SCC","County", "Emission","Year","Application")
+mergeNEI0$Year <- as.factor(mergeNEI0$Year)
 ## Isolate motor vehicles from Application with thee word `Mobile`
-motorNEI <- grep("[Mm]obile", mergeNEI$Application)
-motorNEI <- mergeNEI[motorNEI,]
-## Aggregate the sum of Emissions per year and source for Baltimore and Los Angeles
+motorNEI <- grep("[Mm]obile", mergeNEI0$Application)
+motorNEI <- mergeNEI0[motorNEI,]
+## Aggregate the sum of Emissions per year and source for Baltimore in Los Angeles
 motorNEI$Emission <- as.integer(motorNEI$Emission)
 motorNEIagg <- aggregate(motorNEI$Emission[motorNEI$County == "06037"], list(motorNEI$Year[motorNEI$County == "06037"]), sum, na.rm = TRUE)
 motorNEIagg1 <- aggregate(motorNEI$Emission[motorNEI$County == "24510"], list(motorNEI$Year[motorNEI$County == "24510"]), sum, na.rm = TRUE)
@@ -45,13 +49,13 @@ barplot(
     names.arg= motorNEIagg$Year,
     xlab="Year",
     ylab="PM2.5 Emissions (Kg)",
-    main="Baltimore motor vehicles",
+    main=expression("Baltimore motor vehicles"),
     ylim=c(0,12))
 barplot(
     (motorNEIagg1$Emission)/10^3,
     names.arg= motorNEIagg1$Year,
     xlab="Year",
     ylab="PM2.5 Emissions (Kg)",
-    main="Los Angeles motor vehicles",
+    main=expression("Los Angeles motor vehicles"),
     ylim=c(0,12))
 dev.off()
