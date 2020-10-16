@@ -21,10 +21,10 @@ SCC <- readRDS("./Unzipped/Source_Classification_Code.rds")
 mergeNEI <- merge(NEI, SCC, by = "SCC")
 ## Isolate observations that contains Coal in SCC.Level.Four
 coalNEI <- grep("[Cc]oal", mergeNEI$SCC.Level.Four)
-mergeNEI <- mergeNEI[coalNEI,]
-## Aggregate the sum of Emissions per year
-mergeNEI$Emissions <- as.integer(mergeNEI$Emissions)
-sumNEI <- aggregate(mergeNEI$Emissions, list(mergeNEI$year), sum, na.rm = TRUE)
+mergeNEI1 <- mergeNEI[coalNEI,]
+## Aggregate the sum of Emissions per year and source
+mergeNEI1$Emissions <- as.integer(mergeNEI1$Emissions)
+sumNEI <- aggregate(mergeNEI1$Emissions, list(mergeNEI1$year), sum, na.rm = TRUE)
 ## Rename properly the col names
 colnames(sumNEI) <- c("Year","Tot_Emission")
 sumNEI$Year <- as.factor(sumNEI$Year)
