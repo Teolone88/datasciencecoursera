@@ -22,7 +22,7 @@ mergeNEI <- merge(NEI, SCC, by = "SCC")
 ## Isolate observations that contains Coal in SCC.Level.Four
 coalNEI <- grep("[Cc]oal", mergeNEI$SCC.Level.Four)
 mergeNEI <- mergeNEI[coalNEI,]
-## Aggregate the sum of Emissions per year and source
+## Aggregate the sum of Emissions per year
 mergeNEI$Emissions <- as.integer(mergeNEI$Emissions)
 sumNEI <- aggregate(mergeNEI$Emissions, list(mergeNEI$year), sum, na.rm = TRUE)
 ## Rename properly the col names
