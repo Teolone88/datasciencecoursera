@@ -1,11 +1,14 @@
 ---
-title: "Peer-graded Assignment: Course Project 1"
-subtitle: "PA1_template.Rmd"
-output: html_document
+title: 'Peer-graded Assignment: Course Project 1'
 author: "Teo Lo Piparo"
+output:
+  html_document: default
+  word_document: default
+subtitle: PA1_template.Rmd
 ---
 
 ```{r setup, include=FALSE}
+options(tinytex.verbose = TRUE)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 #### Introduction
@@ -33,6 +36,13 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 * Process/transform the data (if necessary) into a format suitable for your analysis
 
 ```{r message=FALSE}
+library(ggplot2)
+library(data.table)
+library(lubridate)
+library(dplyr)
+library(lattice)
+library(gridExtra)
+
 fileUrl <-
     "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 download.file(fileUrl, destfile = "./repdata%2Fdata%2Factivity.zip", mode = "wb")
@@ -51,9 +61,8 @@ str(head(csv0))
 
 * Calculate the total number of steps taken per day.
 
-```{r message=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 Sys.setlocale("LC_ALL", "English")
-library(ggplot2)
 step0 <- aggregate(steps~.,data = csv0, sum)
 step0 <- step0[,c(1,3)] ; 
 step0[,1] <- as.Date(step0$date)
@@ -69,11 +78,11 @@ g + geom_histogram(stat="identity") + theme_bw() +
 
 * Calculate and report the mean and median of the total number of steps taken per day
 
-```{r}
+```{r echo=TRUE}
 step1 <- aggregate(steps ~ ., data = step0, mean)
 step2 <- median(step1[,2],na.rm = T)
 ```
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 g1 <- ggplot(data = step1, aes(x = date, y = steps))
 g1 + geom_line() + theme_bw() +
     ggtitle("Average no. of steps per day") +
@@ -86,11 +95,11 @@ g1 + geom_line() + theme_bw() +
 
 * Make a time series plot (i.e. \color{red}{\verb|type = "l"|}`type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis).
 
-```{r}
+```{r echo=TRUE, warning=FALSE}
 step3 <- aggregate(steps ~ interval, data = csv0, mean)
 step4 <- aggregate(steps ~ date, data = csv0, mean)
 ```
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 plot(step3$interval,step3$steps,type="l",
      xlab="Intervals", ylab="Average no. of steps",
      main=expression("Average no. of steps per interval for all days"))
@@ -98,9 +107,7 @@ plot(step3$interval,step3$steps,type="l",
 
 **Another way of answering the above question:**
 
-```{r echo=FALSE}
-library(lattice)
-library(lubridate)
+```{r echo=FALSE, warning=FALSE}
 xyplot(steps ~ interval | as.factor(mday(as.Date(date))), 
              data=csv0, type=c("l"), as.table=T,
              main=list(label=expression("Average steps by interval for each mday"), cex=.9),
@@ -112,12 +119,11 @@ xyplot(steps ~ interval | as.factor(mday(as.Date(date))),
 
 * Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r}
-library(ggplot2)
+```{r echo=TRUE, warning=FALSE}
 step5 <- median(step3[,2],na.rm = T)
 step6 <- subset(step3$interval, step3$steps == max(step3$steps, na.rm = T))
 ```
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 ggplot(data=step3, aes(x=interval, y=steps)) +
   geom_line(stat = "identity") +
   geom_hline(aes(yintercept=step5, col="red"),na.rm = T, linetype="dashed") +
@@ -135,9 +141,7 @@ ggplot(data=step3, aes(x=interval, y=steps)) +
 
 * Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with \color{red}{\verb|NA|}`NAs`).
 
-```{r warning=FALSE}
-library(data.table)
-library(ggplot2)
+```{r echo=TRUE, warning=FALSE}
 step6 <- table(sum(is.na(csv0)))
 step7 <- data.frame("NAs Steps"=csv0$steps, "NAs dates"=csv0$date, "NAs intervals"=csv0$interval)
 step7b <- data.frame(sapply(step7,function (x) sum(is.na(x)), simplify = T)) ; step7b <- transpose(step7b)
@@ -154,8 +158,7 @@ ggplot(step7b, aes(y=NAsSteps,x="")) +
 
 * Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
-```{r warning=FALSE}
-library(dplyr)
+```{r echo=TRUE, warning=FALSE}
 step8 <- csv0
 step8 <- step8 %>%
   ## Grouping by intervals
@@ -168,7 +171,7 @@ step8$steps <- format(round(step8$steps)); step8$steps <- as.integer(step8$steps
 
 * Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r warning=FALSE}
+```{r echo=TRUE, warning=FALSE}
 step9 <- merge(csv0, step8, by = c("date","interval"))
 step9 <- step9[,c(1,2,4)]; 
 colnames(step9) <- c("date","interval","steps")
@@ -176,9 +179,7 @@ colnames(step9) <- c("date","interval","steps")
 
 * Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.
 
-```{r warning=FALSE}
-library(lubridate)
-library(ggplot2)
+```{r echo=TRUE, warning=FALSE}
 step10 <- aggregate(steps ~ date, data=step9, sum)
 step10mean <- mean(step10$steps)
 step10median <- median(step10$steps)
@@ -207,10 +208,10 @@ post <- ggplot(step10, aes(y = steps, x = as.Date(date))) +
   theme_bw() +
   xlab("Date") + ylab("Steps count") + ggtitle("Ex Post - No. of steps per day")
 ```
+
 Both graphs presents equal values, except for the missing ones, however, the mean & median are affected making them similar to each other.
 
-```{r}
-library(gridExtra)
+```{r echo=FALSE, warning=FALSE}
 grid.arrange(ante,post)
 ```
 
@@ -220,18 +221,16 @@ grid.arrange(ante,post)
 
 * Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
-```{r echo=FALSE}
-library(lubridate)
+```{r echo=TRUE, warning=FALSE}
 Sys.setlocale("LC_ALL", "English")
 step9$wday <- ifelse(lubridate::wday(as.Date(step9$date), label=T, abbr=T) %in% c("Sat", "Sun"), "Weekend", "Weekday")
 ```
 
 * Make a panel plot containing a time series plot (i.e. \color{red}{\verb|type = "l"|}`type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
-```{r}
-library(lattice)
+```{r echo=TRUE, warning=FALSE}
 steptmp <- aggregate(steps ~ interval + wday, data=step9, mean)
 ```
-```{r}
+```{r echo=FALSE, warning=FALSE}
 xyplot(steps ~ interval | wday,type= "l", data= steptmp, layout=1:2)
 ```
