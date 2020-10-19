@@ -1,0 +1,237 @@
+---
+title: "Peer-graded Assignment: Course Project 1"
+subtitle: "PA1_template.Rmd"
+output: html_document
+author: "Teo Lo Piparo"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#### Introduction
+
+It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a [Fitbit](http://www.fitbit.com/), [Nike Fuelband](http://www.nike.com/us/en_us/c/nikeplus-fuelband), or [Jawbone Up](https://jawbone.com/up). These type of devices are part of the “quantified self” movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data.
+
+This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+The data for this assignment can be downloaded from the course web site:
+
+Dataset: [Activity monitoring data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip) [52K]
+
+**The variables included in this dataset are:**
+
+* `steps`: Number of steps taking in a 5-minute interval (missing values are coded as \color{red}{\verb|NA|}NA)
+* `date`: The date on which the measurement was taken in `YYYY-MM-DD` format
+* `interval`: Identifier for the 5-minute interval in which measurement was taken
+
+The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+
+
+### Loading and preprocessing the data
+
+* Load the data (i.e. \color{red}{\verb|read.csv()|}`read.csv()`)
+* Process/transform the data (if necessary) into a format suitable for your analysis
+
+```{r message=FALSE}
+fileUrl <-
+    "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+download.file(fileUrl, destfile = "./repdata%2Fdata%2Factivity.zip", mode = "wb")
+## Unzip file
+unzip(
+    "./repdata%2Fdata%2Factivity.zip",
+    exdir = "./Unzipped"
+)
+## Read File
+csv0 <- read.csv("./Unzipped/activity.csv", header = TRUE, sep = ",")
+str(head(csv0))
+```
+
+### What is mean total number of steps taken per day?
+**For this part of the assignment, you can ignore the missing values in the dataset.**
+
+* Calculate the total number of steps taken per day.
+
+```{r message=FALSE}
+Sys.setlocale("LC_ALL", "English")
+library(ggplot2)
+step0 <- aggregate(steps~.,data = csv0, sum)
+step0 <- step0[,c(1,3)] ; 
+step0[,1] <- as.Date(step0$date)
+```
+```{r echo=FALSE, warning=FALSE}
+g <- ggplot(data=step0, aes(x=date, y=steps))
+g + geom_histogram(stat="identity") + theme_bw() +
+    ggtitle("No. of steps per day") +
+    xlab("Date") + ylab("Steps count")
+```
+
+**If you do not understand the difference between a histogram and a barplot, research the difference between them. Make a histogram of the total number of steps taken each day.**
+
+* Calculate and report the mean and median of the total number of steps taken per day
+
+```{r}
+step1 <- aggregate(steps ~ ., data = step0, mean)
+step2 <- median(step1[,2],na.rm = T)
+```
+```{r echo=FALSE}
+g1 <- ggplot(data = step1, aes(x = date, y = steps))
+g1 + geom_line() + theme_bw() +
+    ggtitle("Average no. of steps per day") +
+    xlab("Date") + ylab("Average steps") +
+    geom_hline(aes(yintercept=step2, col="black"),na.rm = T, linetype="dashed") +
+    scale_color_manual(aes(labels = "Median"), values = "black") 
+```
+
+### What is the average daily activity pattern?
+
+* Make a time series plot (i.e. \color{red}{\verb|type = "l"|}`type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis).
+
+```{r}
+step3 <- aggregate(steps ~ interval, data = csv0, mean)
+step4 <- aggregate(steps ~ date, data = csv0, mean)
+```
+```{r echo=FALSE}
+plot(step3$interval,step3$steps,type="l",
+     xlab="Intervals", ylab="Average no. of steps",
+     main=expression("Average no. of steps per interval for all days"))
+```
+
+**Another way of answering the above question:**
+
+```{r echo=FALSE}
+library(lattice)
+library(lubridate)
+xyplot(steps ~ interval | as.factor(mday(as.Date(date))), 
+             data=csv0, type=c("l"), as.table=T,
+             main=list(label=expression("Average steps by interval for each mday"), cex=.9),
+             xlab=list(label="Interval", cex=.8),
+             ylab=list(label="Steps", cex=.8),
+             scales=list(tck=c(1,1), x=list(cex=.6, rot=90), y=list(cex=.6)),
+             par.strip.text = list(cex=.6, lines=.8))
+```
+
+* Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r}
+library(ggplot2)
+step5 <- median(step3[,2],na.rm = T)
+step6 <- subset(step3$interval, step3$steps == max(step3$steps, na.rm = T))
+```
+```{r echo=FALSE}
+ggplot(data=step3, aes(x=interval, y=steps)) +
+  geom_line(stat = "identity") +
+  geom_hline(aes(yintercept=step5, col="red"),na.rm = T, linetype="dashed") +
+  scale_color_manual(aes(labels = "Median"), values = "red") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 20)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  geom_vline(xintercept = step6, col="blue", linetype="dashed") +
+  geom_text(aes(step6,0),label = step6, col="blue", size=7)
+```
+
+### Imputing missing values
+
+**Note that there are a number of days/intervals where there are missing values (coded as \color{red}{\verb|NA|}NA). The presence of missing days may introduce bias into some calculations or summaries of the data.**
+
+* Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with \color{red}{\verb|NA|}`NAs`).
+
+```{r warning=FALSE}
+library(data.table)
+library(ggplot2)
+step6 <- table(sum(is.na(csv0)))
+step7 <- data.frame("NAs Steps"=csv0$steps, "NAs dates"=csv0$date, "NAs intervals"=csv0$interval)
+step7b <- data.frame(sapply(step7,function (x) sum(is.na(x)), simplify = T)) ; step7b <- transpose(step7b)
+colnames(step7b) <- c("NAsSteps", "NAsDates", "NAsIntervals")
+```
+```{r echo=FALSE, warning=FALSE}
+ggplot(step7b, aes(y=NAsSteps,x="")) +
+  geom_bar(fill = "#0073C2FF", stat="identity")+
+  geom_text(aes(label = paste(NAsSteps," (",formatC(mean(is.na(csv0$steps))*100,digits=3),"% )")),position = position_stack(vjust = 0.5),size= 4) +
+  scale_y_continuous(name="Total step observations", limits=c(0,sum(complete.cases(csv0$steps)))) +
+  xlab("NAs count") +
+  theme_bw()
+```
+
+* Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+```{r warning=FALSE}
+library(dplyr)
+step8 <- csv0
+step8 <- step8 %>%
+  ## Grouping by intervals
+  group_by(interval) %>%
+  ## Applying grouped mean for each respective NA
+  mutate(steps = ifelse(is.na(steps), mean(steps, na.rm=T), steps))
+  ## Rounding observations as integers
+step8$steps <- format(round(step8$steps)); step8$steps <- as.integer(step8$steps)
+```
+
+* Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+```{r warning=FALSE}
+step9 <- merge(csv0, step8, by = c("date","interval"))
+step9 <- step9[,c(1,2,4)]; 
+colnames(step9) <- c("date","interval","steps")
+```
+
+* Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.
+
+```{r warning=FALSE}
+library(lubridate)
+library(ggplot2)
+step10 <- aggregate(steps ~ date, data=step9, sum)
+step10mean <- mean(step10$steps)
+step10median <- median(step10$steps)
+```
+```{r echo=FALSE, warning=FALSE}
+ggplot(step10, aes(y = steps, x = as.Date(date))) +
+  geom_histogram(aes(fill = wday(date)), 
+                 position = "identity", stat = "identity") +
+  scale_fill_gradient("Wday",low = "lightblue", high = "darkblue") +
+  geom_hline(aes(yintercept=step10mean, col="Mean"), linetype= "dashed", lwd=.9) +
+  geom_hline(aes(yintercept=step10median, col="Median"), alpha=1/2, lwd=.9) +
+  labs(colour="Calc") +
+  theme_bw() +
+  xlab("Date") + ylab("No. of steps") + ggtitle("No. of steps by weekday")
+```
+
+* Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+```{r echo=FALSE, warning=FALSE}
+ante <- ggplot(data=step0, aes(x=date, y=steps)) +
+  geom_histogram(stat="identity") + theme_bw() +
+  ggtitle("Ex Ante - No. of steps per day") +
+  xlab("Date") + ylab("Steps count")
+post <- ggplot(step10, aes(y = steps, x = as.Date(date))) +
+  geom_histogram(position = "identity", stat = "identity") +
+  theme_bw() +
+  xlab("Date") + ylab("Steps count") + ggtitle("Ex Post - No. of steps per day")
+```
+Both graphs presents equal values, except for the missing ones, however, the mean & median are affected making them similar to each other.
+
+```{r}
+library(gridExtra)
+grid.arrange(ante,post)
+```
+
+### Are there differences in activity patterns between weekdays and weekends?
+
+**For this part the \color{red}{\verb|weekdays()|}weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.**
+
+* Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r echo=FALSE}
+library(lubridate)
+Sys.setlocale("LC_ALL", "English")
+step9$wday <- ifelse(lubridate::wday(as.Date(step9$date), label=T, abbr=T) %in% c("Sat", "Sun"), "Weekend", "Weekday")
+```
+
+* Make a panel plot containing a time series plot (i.e. \color{red}{\verb|type = "l"|}`type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+```{r}
+library(lattice)
+steptmp <- aggregate(steps ~ interval + wday, data=step9, mean)
+```
+```{r}
+xyplot(steps ~ interval | wday,type= "l", data= steptmp, layout=1:2)
+```
