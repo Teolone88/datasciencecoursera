@@ -54,7 +54,7 @@ What is the mean?
 
 The mean for this r.v. X is given by
 
-<img src="https://render.githubusercontent.com/render/math?math=E[X] = \sum_{i=1}^4 p_i X_i = 0.1 \times 1+0.2 \times 2+0.3 \times 3+0.4 \times 4 = 3."> 
+<img src="https://render.githubusercontent.com/render/math?math=E[X] = \sum_{i=1}^4 p_i X_i = (0.1 \times 1.0) %2b (0.2 \times 2.0) %2b (0.3 \times 3.0) %2b (0.4 \times 4.0) = 3."> 
 
 - A web site (www.medicine.ox.ac.uk/bandolier/band64/b64-7.html) for home pregnancy tests cites the following: “When the subjects using the test were women who collected and tested their own samples, the overall sensitivity was 75%. Specificity was also low, in the range 52% to 75%.” Assume the lower value for the specificity. Suppose a subject has a positive test and that 30% of women taking pregnancy tests are actually pregnant. What number is closest to the probability of pregnancy given the positive test?
 
