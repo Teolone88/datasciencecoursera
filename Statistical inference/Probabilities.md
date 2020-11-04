@@ -65,7 +65,7 @@ Let A be the event “the test is positive” and B the event “the woman is pr
 
 Sensitivity: <img src="https://render.githubusercontent.com/render/math?math=\frac{P(A \cap B)}{P(B)} = P( A | B) = 0.75"> </br>
 Specificity: <img src="https://render.githubusercontent.com/render/math?math=\frac{P(A^c \cap B^c)}{P(B^c)} = P(A^c | B^c) = 0.52"> </br>
-Specificity: <img src="https://render.githubusercontent.com/render/math?math=P(B) = 0.30"> </br>
+<img src="https://render.githubusercontent.com/render/math?math=P(B) = 0.30"> </br>
 
 <img src="https://render.githubusercontent.com/render/math?math=P(B | A) = \frac{P(A \cap B)}{P(A)}">
 <img src="https://render.githubusercontent.com/render/math?math== \frac{P(B) P(A|B)}{P(B) P(A|B) + P(B^c) P(A|B^c)}">
