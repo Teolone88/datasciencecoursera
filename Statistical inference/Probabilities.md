@@ -67,6 +67,6 @@ Specificity: <img src="https://render.githubusercontent.com/render/math?math=\fr
 <img src="https://render.githubusercontent.com/render/math?math=P(B) = 0.30"> </br>
 
 <img src="https://render.githubusercontent.com/render/math?math=P(B | A) = \frac{P(A \cap B)}{P(A)}">
-<img src="https://render.githubusercontent.com/render/math?math== \frac{P(B) P(A|B)}{P(B) P(A|B) + P(B^c) P(A|B^c)}">
-<img src="https://render.githubusercontent.com/render/math?math== \frac{P(B) P(A|B)}{P(B) P(A|B) + P(B^c) (1-P(A^c|B^c))}">
-<img src="https://render.githubusercontent.com/render/math?math== \frac{0.30 * 0.75}{0.30 * 0.75 + (1-0.30) (1-0.52)} = 0.4010695">
+<img src="https://render.githubusercontent.com/render/math?math== \frac{P(B) P(A|B)}{P(B) P(A|B) %2b P(B^c) P(A|B^c)}">
+<img src="https://render.githubusercontent.com/render/math?math== \frac{P(B) P(A|B)}{P(B) P(A|B) %2b P(B^c) (1-P(A^c|B^c))}">
+<img src="https://render.githubusercontent.com/render/math?math== \frac{0.30 * 0.75}{0.30 * 0.75 %2b (1-0.30) (1-0.52)} = 0.4010695">
