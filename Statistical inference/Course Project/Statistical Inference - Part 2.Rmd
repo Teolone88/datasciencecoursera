@@ -1,0 +1,108 @@
+---
+title: "ToothGrowth Exploratory Analysis"
+author: "Teo Lo Piparo"
+date: "11/11/2020"
+header-includes:
+- \usepackage{fontspec}
+output:
+   pdf_document:
+     latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include=FALSE}
+library(ggplot2)
+library(lattice)
+library(tidyverse)
+```
+
+```{r}
+## Load the dataset
+data = ToothGrowth
+```
+
+## Exploratory analysis
+
+Quick exploration using the lattice library to visulize patterns for the exploratory analysis
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+dotplot(data$len ~ data$dose | data$supp, data = data, groups = data$dose, aspect = 1)
+```
+
+There seems to appear a pattern between the doses and the length of teeth, however, is clearer that the VC supplement is more sensitive to the dose amount.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+len.mu <- data %>%
+    group_by(dose, supp) %>%
+    summarise(mean = mean(len))
+
+data %>% 
+    ggplot(aes(x = len)) +
+    geom_histogram(aes(x = len, y = ..density.., fill = ..density..), alpha = .8) +
+    scale_fill_continuous(low = "white", high = "black") +
+    geom_vline(data = len.mu, mapping = aes(xintercept = mean), lwd = 1, linetype = "dotted") +
+    geom_density(stat = "density", lwd = 1) +
+    theme_bw() + labs(x="teeth growth", y="distribution") +
+    facet_wrap(supp ~ dose, nrow = 2) + theme(legend.position = "none") +
+    ggtitle("Distribution of growth by dose")
+```
+
+The distribution comparison by supplement appears to be optimally distributed with 2 mg/day of orange juice or 1 mg/day of ascorbic acid, showing a better effectiveness distribution. However, the means are increasing with the increase of the dose, regardless of the supplement.
+
+## Confidence interval
+
+The confidence intervals from the means have been calculated and presented as a matrix, showing the means for each dose and supplement and respective confidence intervals from their respective means.
+
+```{r message=TRUE, warning=FALSE, include=FALSE}
+## Execute the t-test to obtain p-value and confidence interval, in order to determine 
+
+## CI for 0.5 mg/day dose
+x0.5 <- data$len[data$supp=="OJ" & data$dose == 0.5]
+y0.5 <- data$len[data$supp=="VC" & data$dose == 0.5]
+d0.5 <- data.frame("OJ-Mean" = round(mean(x0.5),2),
+                   "OJ-Lower" = round(mean(x0.5) + c(-1) * qnorm(0.975) * sd(x0.5)/sqrt(length(x0.5)),2),
+                   "OJ-Upper" = round(mean(x0.5) + c(1) * qnorm(0.975) * sd(x0.5)/sqrt(length(x0.5)),2),
+                   "VC-Mean" = round(mean(y0.5),2),
+                   "VC-Lower" = round(mean(y0.5) + c(-1) * qnorm(0.975) * sd(y0.5)/sqrt(length(y0.5)),2),
+                   "VC-Upper" = round(mean(y0.5) + c(1) * qnorm(0.975) * sd(y0.5)/sqrt(length(y0.5)),2))
+## CI for 1.0 mg/day dose
+x1.0 <- data$len[data$supp=="OJ" & data$dose == 1]
+y1.0 <- data$len[data$supp=="VC" & data$dose == 1]
+d1.0 <- data.frame("OJ-Mean" = round(mean(x1.0),2),
+                   "OJ-Lower" = round(mean(x1.0) + c(-1) * qnorm(0.975) * sd(x1.0)/sqrt(length(x1.0)),2),
+                   "OJ-Upper" = round(mean(x1.0) + c(1) * qnorm(0.975) * sd(x1.0)/sqrt(length(x1.0)),2),
+                   "VC-Mean" = round(mean(y1.0),2),
+                   "VC-Lower" = round(mean(y1.0) + c(-1) * qnorm(0.975) * sd(y1.0)/sqrt(length(y1.0)),2),
+                   "VC-Upper" = round(mean(y1.0) + c(1) * qnorm(0.975) * sd(y1.0)/sqrt(length(y1.0)),2))
+## CI for 2.0 mg/day dose
+x2.0 <- data$len[data$supp=="OJ" & data$dose == 2]
+y2.0 <- data$len[data$supp=="VC" & data$dose == 2]
+d2.0 <- data.frame("OJ-Mean" = round(mean(x2.0),2),
+                   "OJ-Lower" = round(mean(x2.0) + c(-1) * qnorm(0.975) * sd(x2.0)/sqrt(length(x2.0)),2),
+                   "OJ-Upper" = round(mean(x2.0) + c(1) * qnorm(0.975) * sd(x2.0)/sqrt(length(x2.0)),2),
+                   "VC-Mean" = round(mean(y2.0),2),
+                   "VC-Lower" = round(mean(y2.0) + c(-1) * qnorm(0.975) * sd(y2.0)/sqrt(length(y2.0)),2),
+                   "VC-Upper" = round(mean(y2.0) + c(1) * qnorm(0.975) * sd(y2.0)/sqrt(length(y2.0)),2))
+```
+
+We decided to have a confidence interval of 95% using the $Z$ value to be 1.960 or using the quantile function of the normal distribution for 0.975. Another known value is $n$ which correspond to the `length()` of the sample population, which is 60 and the $\sigma$ that is calculated accordingly for each calculation using the `sd()` function. The final formula used, is then represented as follow:
+$\bar X ±_{1,-1} \times  Z \times \frac{\sigma}{\sqrt n}$
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+## Create a comprehensive matrix
+ci.matrix = matrix(rbind(as.numeric(d0.5[1,]),as.numeric(d1.0[1,]),as.numeric(d2.0[1,])),nrow = 3, ncol = 6, 
+                   dimnames = list(c("d0.5", "d1.0", "d2.0"),
+                                   c("OJ-mean", "OJ-lower", "OJ-upper", "VC-mean", "VC-lower", "VC-upper")))
+```
+```{r}
+ci.matrix
+```
+
+Based on the matrix provided:
+
+- Given lower dose (0.5 and 1.0 mg/day), OJ provides more teeth growth than VC;
+- Given 2.0mg/day dose, the teeth growth is the same for both supplement methods;
+- Higher dosages give more growth, independent from the supplement method.
