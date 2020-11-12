@@ -1,0 +1,206 @@
+---
+title: "Exponential Distribution Investigation with the CLT comparison"
+author: "Teo Lo Piparo"
+date: "10/11/2020"
+header-includes:
+- \usepackage{fontspec}
+output:
+   pdf_document:
+     latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+```
+
+## Overview
+
+The project consists of two parts:
+
+- A simulation exercise.
+- Basic inferential data analysis.
+
+### Part 1
+
+The 1st part will investigate the exponential distribution in R and compare it with the Central Limit Theorem taking into consideration the distribution of averages of 40 exponentials, throughout thousand simulations.
+
+1) **Show the sample mean and compare it to the theoretical mean of the distribution.**
+
+Set the seed for reproducibility
+Simulate $n=40$ standard normal random exponential variables with μ and $\sigma$ of $1/ \lambda=5$
+Let $X_{i}$ be the variable $i$
+Then note that μ $=E[X_{i}]=1/ \lambda=5$
+$Var(X_{i})=(1/ \lambda)^2=25$
+Take average of each simulation of $n=40$ standard normal random exponential variables
+Repeat this over and over for $t=1000$ times
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(1)
+
+n = 40 ## sample size
+t = 1000 ## no. of simulations
+lambda = 0.2 ## lambda as the rate paramenter
+theor.mu = 1/lambda ## theoretical mean
+theor.sd = 1/lambda ## theoretical standard deviation
+df = data.frame("mu" = c(1:t)) ## dummy data frame for the 1000 simulations to store the means
+```
+
+The below function generate, for 1000 times, 40 random exponential with $\lambda$ set at 0.2. Then, for each simulation, the μ is stored in the dummy data frame.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+for(i in 1:t) {
+    random.exp = rexp(n,lambda)
+    df[i,1] = as.numeric(mean(random.exp))
+}
+```
+
+The following plot shows the distribution of the 1000 simulations at $\bar X$ of sample size of 40, and the theoretical μ of $1/ \lambda$ is close to the simulated one.
+
+##### Histogram
+
+```{r echo=FALSE, fig.height=4, fig.width=5.5, message=FALSE, warning=FALSE}
+df %>%
+    ggplot(aes(x= mu)) +
+    geom_histogram(aes(x=mu, y= ..density.., fill = ..density..), binwidth = .2, alpha = .8)+
+    scale_fill_gradient(low = "white", high = "black") +
+    geom_density(stat = "density", lwd = 1.5, color = "black") +
+    xlab("Sample mean") + ylab("Percentage") +
+    geom_vline(xintercept = median(df$mu), linetype = "dotted", color="white", lwd = 1.2)+
+    theme_bw()+ggtitle("1000 simulations from 40 exponential sample means")
+```
+
+##### Cumulative line plot
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+means <- cumsum(df$mu)/(1:t)
+```
+```{r echo=FALSE, fig.align='center', fig.height=4, fig.width=5.5, message=FALSE, warning=FALSE}
+plot(means, type="l", lwd=2,
+     main = "Sample Mean versus Theoretical Mean",
+     xlab = "Number of simulations",
+     ylab = "Cumulative mean"); abline(h=1/lambda, col="black", lwd=2)
+```
+
+The simulation and the theoretical approach show a $\sim$ outcome and is presented as follow.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+data.frame("Theory mean" = theor.mu, "Simul. mean" = mean(df$mu))
+```
+
+As $t$ increases, the $\bar X$ converges to the theoretical $\mu$:
+
+$\bar X$ of 1000 simulations of average of 40 exponentials is 4.990025.
+
+Theoretical μ is $1/ \lambda= 5$
+
+2) **Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.**
+
+Calculate the theoretical variance using the know variables $\lambda$ and $n$.
+Knowing that the $Var_{X_{i}}$ is $(1/ \lambda)^2/n$, we can compare it with the calculated variance of the simulation.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+theor.var = ((1/lambda)^2)/n ## Theoretical variance
+simul.var = var(df$mu)
+```
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+data.frame("Theory variance" = theor.var, "Simul. variance" = simul.var)
+```
+
+3) **Show that the distribution is approximately normal**
+
+Create an overlay for the known $\bar X$ distribution plot that shows the theoretical distribution, in order to identify similarity in their densities.
+Identify the X ais by the sequence of 100 binwidth from the min value of the $\bar X$ and the max value of thr $\bar X$, in order to get feasible quantile distribution of the X axis array. Then, identify the Y axis by using the density function of the normal distribution to determine the $\bar X$ by using the theoretical μ which we previously confirmed to be equal to $1/ \lambda = 1/0.2 = 5$, and the theoretical $\sigma$ which equal to $\frac {1/ \lambda} {\sqrt{n}}$
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df$theor.x.density = seq(min(df$mu), max(df$mu), length=100) ## Set bin by the upper value of 100s
+df$theor.y.density = dnorm(df$theor.x.density, mean=theor.mu, sd=(1/lambda/sqrt(n))) ## Density normal distribution function
+```
+
+
+```{r echo=FALSE, fig.height=4, fig.width=5.5, message=FALSE, warning=FALSE}
+df %>%
+    ggplot(aes(x= mu)) +
+    geom_histogram(aes(x=mu, y= ..density.., fill = ..density..), binwidth = .2, alpha = .8)+
+    scale_fill_gradient(low = "white", high = "black") +
+    geom_density(stat = "density", lwd = 1.5, aes(color = "Simul."), alpha = .6) +
+    geom_line(aes(color = "Theor.", x=theor.x.density, y=theor.y.density), lwd = 1.5, alpha = .6) + 
+    xlab("Sample mean") + ylab("Percentage") +
+    geom_vline(aes(xintercept = median(mu), color = "Simul."), linetype = "dotted", lwd = 1.5)+
+    geom_vline(aes(xintercept = median(theor.x.density), color = "Theor."),linetype = "dotted", lwd = 1.5) +
+    theme_bw()+ggtitle("Sample means simulation vs theoretical density exp. dist. with lambda .2")
+```
+
+
+
+
+
+## Appendix A
+
+CLT explaination for asynthopic values, with infinite possibilities. This Appendix sere a ground theory for the assignment.
+
+Having a population of random uniforms of size 1000. The cumulative mean for each observation is then calculated by the cumulative sum of the population divided by each observation.
+
+```{r Simulation of random normals, echo=FALSE, warning=FALSE}
+set.seed(1)
+x = runif(1000) ## random popuation
+n = 1000 ## population size
+mu.x = cumsum(rnorm(n))/(1:n) ## cumulative mu for each observation
+```
+
+The frequency of the values for the population looks as follow.
+
+```{r Simple histogram,echo=FALSE, fig.height=4, fig.width=5.5, message=FALSE, warning=FALSE}
+hist(x)
+```
+
+Furthermore, to better understand the Central Limit Theorem, some color code for the frequency is introduced.
+
+```{r Color coded histogram,echo=FALSE, fig.height=4, fig.width=5.5, message=FALSE, warning=FALSE}
+as.data.frame(x) %>%
+    ggplot(aes(x=x)) +
+    geom_histogram(breaks=seq(0, 1, by =.1), binwidth = 0.1, boundary = -0.5, aes(fill=..count..)) +
+    geom_vline(xintercept = 0, linetype = "dotted")+
+    theme_bw()+ggtitle("Central Limit Theorem for 1000 rnorm") + 
+    scale_fill_gradient("Count", low = "green", high = "red") +
+    labs(x="rnorm",y="Frequency")
+```
+
+To show the the distribution of the value likelihood is equal for the population, a density visualization is provided.
+
+```{r Density distribution,echo=FALSE, fig.height=4, fig.width=5.5, message=FALSE, warning=FALSE}
+as.data.frame(x) %>%
+    ggplot(aes(x=x)) +
+    geom_density() +
+    geom_vline(xintercept = 0, linetype = "dotted")+
+    theme_bw()+ggtitle("Density for 1000 rnorm") + 
+    scale_fill_gradient("Count", low = "green", high = "red") +
+    labs(x="rnorm",y="Density Likelihood")
+```
+
+Now, doing the same thing with the cumulative means of each observation the Central Limit Theorem is nicely explained, showing an alignment with the true population value, which is 0. This works only on large population sizes.
+
+```{r echo=FALSE, message=FALSE, fig.height=4, fig.width=5.5, warning=FALSE}
+ggplot(data = as.data.frame(mu.x), aes(x = c(1:n), y= mu.x))+
+    geom_line()+
+    xlab("No. of observations")+ylab("Cumulative means")+
+    geom_hline(yintercept = 0, linetype = "dotted")+
+    theme_bw()+ggtitle("Central Limit Theorem")
+```
+
+Equally, to better visualize the message, a similar color coded histogram can better clarify the CLT by showing the distribution of the cumulative means.
+
+```{r echo=FALSE, fig.height=4, fig.width=5.5, message=FALSE, warning=FALSE}
+as.data.frame(mu.x) %>%
+    ggplot(aes(x=mu.x)) +
+    geom_histogram(aes(fill=..count..))+
+    xlab("No. of observations") +
+    ylab("Cumulative means")+
+    geom_vline(xintercept = 0, linetype = "dotted", color="green")+
+    scale_fill_gradient("Count", low = "green", high = "red") +
+    theme_bw()+ggtitle("Central Limit Theorem")
+```
+
+This prove, in practice, what in theory is explained by the CLT and presented by the next example. In fact, given an asymptotic population with infinite values the population true value will align on 0. However, the theorem is only explainable with large population sizes, as the cumulative mean will get closer to 0 as the number of observations increase as well.
+
