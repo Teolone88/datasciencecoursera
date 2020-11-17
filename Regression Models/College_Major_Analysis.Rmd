@@ -1,0 +1,240 @@
+---
+title: "College_Major_Analysis"
+author: "Teo Lo Piparo"
+header-includes: \usepackage{fontspec}
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(latticeExtra)
+require(tidyverse)
+require(ggplot2)
+require(reorder)
+```
+
+### Question 2
+
+Your assignment is to study how income varies across college major categories. Specifically answer: “Is there an association between college major category and income?”
+To get started, start a new R/RStudio session with a clean workspace. To do this in R, you can use the q() function to quit, then reopen R. The easiest way to do this in RStudio is to quit RStudio entirely and reopen it. After you have started a new session, run the following commands. This will load a data.frame called college for you to work with.
+
+```{r}
+## install.packages("devtools")
+## devtools::install_github("head(/collegeIncome")
+library(collegeIncome)
+data(college)
+## devtools::install_github("jhudsl/matahari")
+library(matahari)
+
+## Start recording R commands
+dance_start(value = FALSE, contents = FALSE)
+```
+
+## Finish recording R commands and save record to Desktop
+dance_save("~/Desktop/college_major_analysis.rds")
+
+First let's explore the population by employability and analyze patterns in their incomes by the different categories of major.
+
+```{r}
+require(lattice)
+require(latticeExtra)
+
+xyplot(median/10^3 ~ total/10^3 | major_category, data = college,
+       type = c("p", "r"))
+```
+Ignoring residuals work-around, the median lm appears to be positive for the categories:
+- Health
+- Communications & Journalism
+- Computers and Mathematics
+
+```{r}
+total <- sum(college$total) ## 6776015 total number of people with major
+n <- sum(college$sample_size) ## 61602 total number of sample size
+data.frame(p25th = mean(college$p25th), median = mean(college$median), pt75th = mean(college$p75th)) ## Earning for each quantile bin of the sample size with roughly 10k difference for each 25th percentile.
+employed <- sum(college$total) * round(mean(college$perc_employed),2) ## 79% of employed people out of the total
+full <- employed * round(mean(college$perc_employed_fulltime[college$perc_employed_fulltime != Inf],na.rm = TRUE),2) ## Around 84% of the employed population is fulltime
+fullyear <- employed * round(mean(college$perc_employed_fulltime[college$perc_employed_fulltime != Inf],na.rm = TRUE),2) * round(mean(college$perc_employed_fulltime_yearround[college$perc_employed_fulltime_yearround != Inf],na.rm = TRUE),2) ## Around 75% of the employed and fulltime population is working all the year..
+part <- employed * round(mean(college$perc_employed_parttime,na.rm = TRUE),2) ## Around 29% of the employed population is parttime
+unemployed <- sum(college$total) * round(mean(college$perc_unemployed),2) ## 21% of the total population is unemployed
+```
+
+Now, let's give an overview of employability by no., percentage and ratio between men and women.
+
+```{r}
+matrix <- matrix(c(total,
+                   n,
+                   round(employed),
+                   round(full),
+                   round(fullyear),
+                   round(part), 
+                   round(unemployed),
+                   "1",
+                   round((n/total),2),
+                   "0.79",
+                   "0.84",
+                   "0.75",
+                   "0.29",
+                   "0.21",
+                   paste(round(mean(college$perc_men)*total/total,2),"/",round(mean(college$perc_women)*total/total,2)),
+                   "NA",
+                   paste(round(mean(college$perc_men)*employed/total,2),"/",round(mean(college$perc_women)*employed/total,2)),
+                   paste(round(mean(college$perc_men)*full/total,2),"/",round(mean(college$perc_women)*full/total,2)),
+                   paste(round(mean(college$perc_men)*fullyear/total,2),"/",round(mean(college$perc_women)*fullyear/total,2)),
+                   paste(round(mean(college$perc_men)*part/total,2),"/",round(mean(college$perc_women)*part/total,2)),
+                   paste(round(mean(college$perc_men)*unemployed/total,2),"/",round(mean(college$perc_women)*unemployed/total,2))), nrow = 3, ncol = 7, byrow = T, dimnames = list(c("number","percentage", "m/w ratio"),c("total","sample","avg.employed","avg.fulltime","avg.yearround","avg.parttime","avg.unemployed")))
+matrix
+```
+Due to rounding and averages the percentages might be a bit off, however, women appear to slightly have a better percentage in major holding compared to men. Unfortunately, this does not expose any class pattern.
+
+Running a lm for employability and percentages of sex gender does not return any statistical relevance.
+
+```{r}
+fit <- lm(1- college$perc_employed ~ college$perc_men + college$perc_women)
+summary(fit)$coef
+```
+
+It is interesting to see that correlation exist between median earnings and major category by sex gender, however, there is more correlations for more majors for women compared to men. Showing a more relationship between women graduation and job landing for more major categories, compared to men graduation and job landing for less major categories. In fact, for men, the job landing after graduation, is more related to those categories:
+- Biology & Life Science
+- Business
+- Engineering
+- Humanities & Liberal Arts
+
+And for women to those categories:
+- Biology & Life Science	
+- Business
+- Computers & Mathematics
+- Education	
+- Engineering	
+- Humanities & Liberal Arts	
+- Law & Public Policy	
+- Psychology & Social Work	
+- Social Science
+
+```{r}
+fit <- lm(college$median ~ college$major_category * college$perc_men + college$perc_women)
+subset(as.data.frame(summary(fit)$coef), as.data.frame(summary(fit)$coef)[[4]] < 0.05)
+```
+
+This might suggest the women, given the holding of a major, are more subject to salary depreciation in the above categories, contrarily to men, which are found positively sensitive to salary fluctuations to fewer major_categories. Furthermore, we can say that with an increase of % unit of people with a major there is a decrease of earnings for women (categories presented) and and increase of earnings for men (categories presented), meaning that an increasing number of women graduations (categories presented) is bringing down the median of earnings and contrarily an increasing number of men graduations (categories presented) is bringing up the median earnings. A major impact is derived by the major category "Business" for both genders, however, the fluctuation of earning for women are more consistent across different disciplines compared to the men fluctuations that almost double the women earning ratio for only 4 categories. This behavior occurs homogeneously across more disciplines for women, showing a tendency to pay less women, regardless the major.
+
+Let's visualize outliners and determine the source of those and how those are exercise leverage on the slope trend.
+
+```{r}
+library(ggiraph)
+
+g1 <- ggplot(data=college, aes(x=perc_women, y=median)) +
+    geom_point_interactive(aes(tooltip = major, data_id = major_category)) +
+    geom_smooth(method = "lm", se = FALSE) +
+    theme_bw() +
+    theme_minimal()
+girafe(ggobj = g1)
+    
+g2 <- ggplot(data=college, aes(x=perc_men, y=median)) +
+    geom_point_interactive(aes(tooltip = major, data_id = major_category)) +
+    geom_smooth(method = "lm", se = FALSE) +
+    theme_bw() +
+    theme_minimal()
+girafe(ggobj = g2)
+```
+
+Misc. Business and Medical Administration appears to carry very high earnings, however, for women the percentage of majors available is only around 25% compared to the men percentage of majors available in the population, which is 75%. The leverage that is associated with the men outliner is way bigger than the women's one.
+
+Let's isolate the residual at -2/2 sd by finding the residuals and by formatting by standard deviations bins.
+
+```{r}
+college$res1 <- resid(fit)
+sigma1 <- 2*sd(resid(fit))
+college$out <- ifelse(abs(college$res1)>sigma1, 1, 0)
+# Plot this, note that DF$Outs is used to set the color of the points.
+plot(college$res1, col= college$out + 1, pch=16)
+```
+Now let's plot again, without the outliers and see the slope trajectory.
+
+```{r}
+#Make a new data.frame with no outliers
+college2 <- college[!college$out,]
+fit.out <- lm(median ~ major_category * perc_men + perc_women, college2)
+subset(as.data.frame(summary(fit.out)$coef), as.data.frame(summary(fit.out)$coef)[[4]] < 0.05)
+# Plot new data
+plot(college2$res,pch=16, ylim = c(-20000,30000), xlim = c(0,200))
+abline(h=0)
+```
+
+Let's observe the lm without the outliers now.
+
+```{r}
+library(ggiraph)
+
+g3 <- ggplot(data=college2, aes(x=perc_women, y=median)) +
+    geom_point_interactive(aes(tooltip = major, data_id = major_category)) +
+    geom_smooth(method = "lm", se = FALSE) +
+    theme_bw() +
+    theme_minimal()
+girafe(ggobj = g3)
+    
+g4 <- ggplot(data=college2, aes(x=perc_men, y=median)) +
+    geom_point_interactive(aes(tooltip = major, data_id = major_category)) +
+    geom_smooth(method = "lm", se = FALSE) +
+    theme_bw() +
+    theme_minimal()
+girafe(ggobj = g4)
+```
+Now both lm are balanced and equally linear.
+
+Another lm is executed around low wages and median earning by major category and only two major categories result statistical significant:
+- Business
+- Physical Sciences
+
+```{r}
+fit1.1 <- lm(college$median ~ college$major_category * college$perc_low_wage_jobs)
+subset(as.data.frame(summary(fit1.1)$coef), as.data.frame(summary(fit1.1)$coef)[[4]] < 0.05)
+```
+
+If we distinguish by sex gender we find correlations for Business, Computer $ Mathematics and Physical Sciences:
+
+```{r}
+fit1.1 <- lm(college$median ~ college$major_category * college$perc_low_wage_jobs + college$perc_women)
+subset(as.data.frame(summary(fit1.1)$coef), as.data.frame(summary(fit1.1)$coef)[[4]] < 0.05)
+```
+
+And for men we find the same major categories, showing no gender difference as per male/femal ratio presented previously.
+
+```{r}
+fit1.1 <- lm(college$median ~ college$major_category * college$perc_low_wage_jobs + college$perc_men)
+subset(as.data.frame(summary(fit1.1)$coef), as.data.frame(summary(fit1.1)$coef)[[4]] < 0.05)
+```
+
+Let's try to understand how many sub categories are present for each major_category, in order to understand the versatility of the major_category and get a sense of its demand capacity by the number of job applications available.
+
+```{r}
+ggplot(data = college, aes(x = major_category, y = ..count..)) +
+geom_bar(aes(x = forcats::fct_infreq(major_category))) +
+theme_bw() +
+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+```
+
+Regardless the income, only 2 categories allows a a discrete numbers of degree of freedom, so the income is not associated by the major_category professional specializations. We do not see any demand/supply pattern here. Let's order the disciplines by median earnings and identify the most paid disciplines.
+
+```{r}
+college %>% 
+    select(major_category,p25th,median,p75th) %>%
+    group_by(major_category) %>%
+    summarise(p25th = mean(p25th), median = mean(median), p75th = mean(p75th)) %>%
+    ggplot(aes(x = reorder(major_category, -median), y = median)) + 
+    geom_bar(stat = "identity") +
+    geom_hline(aes(yintercept = mean(p25th), color = "25th"), lwd = 1.5) +
+    geom_hline(aes(yintercept = mean(median), color = "median"), lwd = 1.5) +
+    geom_hline(aes(yintercept = mean(p75th), color = "75th"), lwd = 1.5) +
+    theme_bw() +
+    theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+```
+
+The expected earnings are estimated from a sample size population, which does not represent the population itself. However, running a power t test the power appears to be quite good.
+
+```{r}
+mean(power.t.test(n = college$sample_size, delta = sd(college$median)/2, sd = sd(college$median), alternative = "one.sided", type = "one.sample")$power)
+```
