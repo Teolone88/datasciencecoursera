@@ -16,6 +16,10 @@ Materials are under development and subject to change.
 * Nick Carchedi 
 * Sean Kross
 
+### HTML Version
+
+http://sux13.github.io/DataScienceSpCourseNotes/
+
 ### License
 
 These course materials are available under the Creative Commons Attribution NonCommercial ShareAlike (CC-NC-SA) license (http://www.tldrlegal.com/l/CC-NC-SA). 
