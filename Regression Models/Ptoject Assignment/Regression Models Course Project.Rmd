@@ -1,0 +1,146 @@
+---
+title: "Regression Models Course Project"
+author: "Teo Lo Piparo"
+date: "20/11/2020"
+header-includes: \usepackage{fontspec}
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(broom)
+```
+
+## Exploratory Analysis
+
+### Boxplot
+```{r message=FALSE, warning=FALSE}
+mtcars %>%
+    select(mpg, am) %>%
+    group_by(am) %>%
+    mutate(am = factor(am, levels = c(0,1))) %>%
+    ggplot(aes(x = am, y = mpg, group = am)) + 
+    geom_boxplot() +
+    scale_x_discrete(labels = c("Automatic", "Manual"),
+                       breaks = c("0","1")) +
+    theme_minimal() +
+    ggtitle("Comparison of mpg by transmission type") +
+    stat_summary(geom="text", fun=quantile,
+                  aes(label=sprintf("%1.1f", ..y..)), 
+                  position=position_nudge(x=0.5), size=3.5)
+```                  
+
+- Manual transmissions, generally perform better in terms of miles/gallon, compared to Manual transmissions.
+
+### Quantified difference
+```{r message=FALSE, warning=FALSE}
+mtcars %>%
+    select(mpg, am) %>%
+    group_by(am) %>%
+    summarise("mu.mpg" = mean(mpg))
+```
+
+- For Automatic transmissions, the car has a mean of ~17 miles/gallon
+- For Manual transmissions, the car has a mean of ~24 miles/gallon
+
+## Regression analysis
+
+### Linear model for all variables
+```{r message=FALSE, warning=FALSE}
+mtcars %>%
+    mutate(am = factor(am, levels = c(0,1))) %>%
+    group_by(am) %>%
+    do(broom::tidy(lm(mpg ~ . -1, data = mtcars))) ## wt and qsec appear stat significant
+
+## Both variables are equally changing regardless the transmission type.
+```
+
+- For each increase of 1000 lbs the car decrease the miles/gallon by 3.83
+- For each increase of sec necessary to travel 1/4 mile the miles/gallon increase by 1.19.
+
+### Residual analysis
+```{r}
+mpg.lm = lm(mpg ~ factor(am), data=mtcars) 
+mpg.res = resid(mpg.lm)
+ggplot(data = mtcars, aes(x = factor(am), y = mpg.res)) +
+    ylab(label = "Mpg Residuals") + xlab(label = "Transmission Type") +
+    ggtitle(label = "Residuals of Mpg by Transmission Type") +
+    geom_hline(yintercept = 0, linetype = "dotted", lwd = 1) +
+    geom_boxplot() +
+    stat_summary(geom="text", fun=quantile,
+                 aes(label=sprintf("%1.1f", ..y..)), 
+                 position=position_nudge(x=0.5), size=3.5) +
+    theme_minimal()
+```
+```{r}
+mpg.stdres = rstandard(mpg.lm)
+ggplot(data = mtcars, aes(x = factor(am), y = mpg.stdres)) +
+    ylab(label = "Standardized Mpg Residuals") + xlab(label = "Transmission Type") +
+    ggtitle(label = "Standardized Residuals of Mpg by Transmission Type") +
+    geom_hline(yintercept = 0, linetype = "dotted", lwd = 1) +
+    geom_boxplot() +
+    stat_summary(geom="text", fun=quantile,
+                 aes(label=sprintf("%1.1f", ..y..)), 
+                 position=position_nudge(x=0.5), size=3.5) +
+    theme_minimal()
+```
+
+- The standardized residual plot shows that the manual transmission presents a broader range of outliers and its mean value is not aligned with the mean value of the model, which indicate that the model accountability is way less reliable compared to automatic transmissions.
+
+### Nested lineam models with ANOVA
+```{r message=FALSE, warning=FALSE}
+fit1 <- lm(mpg ~ factor(am) + factor(gear) -1, mtcars)
+fit2 <- lm(mpg ~ factor(am) + factor(gear) + factor(carb) + factor(vs) -1, mtcars)
+fit3 <- lm(mpg ~ factor(am) + factor(gear) + factor(carb) + factor(vs) + qsec + wt -1, mtcars)
+fit4 <- lm(mpg ~ factor(am) + factor(gear) + factor(carb) + factor(vs) + qsec + wt + drat + hp -1, mtcars)
+fit5 <- lm(mpg ~ factor(am) + factor(gear) + factor(carb) + factor(vs) + qsec + wt + drat + hp + disp + factor(cyl) -1, mtcars)
+
+anova(fit1, fit2, fit3, fit4, fit5)
+
+## The linear models are not responding very well with inflated factorial variables. However, the continuous variables that mostly affect the mpg remain the weight, the 1/4 mile time, and the transmission type.
+
+fit0 <- lm(mpg ~ factor(am) + wt + qsec -1, mtcars)
+
+as.data.frame(summary(fit0)$coef) %>%
+    select(Estimate, `Pr(>|t|)`) %>%
+    filter(`Pr(>|t|)` <= 0.05)
+```
+
+- Transmission type is impacting the miles/gallon but not more than the weight variable and the 1/4 mile time variable.
+
+### Predicted Probability
+```{r message=FALSE, warning=FALSE}
+fit1.2 <- glm(am ~ mpg + wt + qsec - 1, mtcars, family = "binomial")
+am.predict = data.frame(mpg = mean(mtcars$mpg), wt=mean(mtcars$wt), qsec=mean(mtcars$qsec))
+round(predict(fit1.2, am.predict, type="response"),2)
+```
+
+- Given a car with an average Miles/Gallon, an average Weight and an average 1/4 Miles Time the percentage that a car will have a manual transmission is estimated to be ~ 40%
+
+### Generalized linear model
+
+```{r message=FALSE, warning=FALSE}
+fit1.1 <- glm(am ~ mpg, mtcars, family = "binomial")
+summary(fit1.1)
+exp(fit1.1$coef)
+exp(confint(fit1.1))
+ggplot(data = mtcars, aes(x=mpg, y=fit1.1$fitted.values)) +
+    geom_line() +
+    geom_point() +
+    theme_minimal() +
+    xlab(label = "Miles/Gallon") + ylab(label = "Probability of Transmission") +
+    ggtitle(label = "Probability of having a Manual transmission depending on no. of MPG") +
+    geom_hline(yintercept = 0.5, linetype = "dotted") +
+    geom_vline(xintercept = 21.5, linetype = "dotted")
+```
+
+- Above 21.5 miles/gallon there is more probability that the car has a manual transmission and below there is more probability that the car is automatic
