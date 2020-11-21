@@ -8,7 +8,7 @@ Getting and Cleaning Data | [Link](https://www.coursera.org/account/accomplishme
 Exploratory Data Analysis | [Link](https://www.coursera.org/account/accomplishments/certificate/DVSKLK3CD2X4)
 Reproducible Research | [Link](https://www.coursera.org/account/accomplishments/certificate/ZDBNWWHTPA32)
 Statistical Inference | [Link](https://www.coursera.org/account/accomplishments/certificate/Z9SQJ4TNJ9XW) 
-Regression Models | [Link]
+Regression Models | [Link](https://www.coursera.org/account/accomplishments/certificate/7AUQYTNEE8LL)
 Practical Machine Learning | [Link]
 Developing Data Products | [Link]
 Data Science Capstone | [Link]
