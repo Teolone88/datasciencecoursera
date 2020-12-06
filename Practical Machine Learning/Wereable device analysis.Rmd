@@ -1,0 +1,202 @@
+---
+title: ""
+author: "Teo Lo Piparo"
+header-includes: \usepackage{fontspec}
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_rf_tree <- function(final_model, tree_num, shorten_label = TRUE) {
+    
+    # source: https://shiring.github.io/machine_learning/2017/03/16/rf_plot_ggraph
+    
+    # get tree by index
+    tree <- randomForest::getTree(final_model, 
+                                  k = tree_num, 
+                                  labelVar = TRUE) %>%
+        tibble::rownames_to_column() %>%
+        # make leaf split points to NA, so the 0s won't get plotted
+        mutate(`split point` = ifelse(is.na(prediction), `split point`, NA))
+    
+    # prepare data frame for graph
+    graph_frame <- data.frame(from = rep(tree$rowname, 2),
+                              to = c(tree$`left daughter`, tree$`right daughter`))
+    
+    # convert to graph and delete the last node that we don't want to plot
+    graph <- graph_from_data_frame(graph_frame) %>%
+        delete_vertices("0")
+    
+    # set node labels
+    V(graph)$node_label <- gsub("_", " ", as.character(tree$`split var`))
+    
+    if (shorten_label) {
+        V(graph)$leaf_label <- substr(as.character(tree$prediction), 1, 1)
+    }
+    
+    V(graph)$split <- as.character(round(tree$`split point`, digits = 2))
+    
+    # plot
+    plot <- ggraph(graph, 'tree') + 
+        theme_graph() +
+        geom_edge_link() +
+        geom_node_point() +
+        geom_node_label(aes(label = leaf_label, fill = leaf_label), na.rm = TRUE, 
+                        repel = FALSE, colour = "white",
+                        show.legend = FALSE)
+    
+    print(plot)
+}
+```
+
+# Background
+
+Read more [here](http:/groupware.les.inf.puc-rio.br/har#ixzz4Tjpy8auY).
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website [here](http://groupware.les.inf.puc-rio.br/har). 
+(see the section on the Weight Lifting Exercise Dataset). 
+
+# Data
+
+The training data for this project are available here: 
+[Training Data](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)
+The test data are available here:
+[Testing Data](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har. If you use the document you create for this class for any purpose please cite them as they have been very generous in allowing their data to be used for this kind of assignment.
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+# Objective
+
+The goal of the project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. You may use any of the other variables to predict with.
+
+### Load packages
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(maptree)
+library(data.table)
+library(forecast)
+library(lubridate)
+library(rattle)
+library(devtools)
+library(dplyr)
+library(igraph)
+library(ggraph)
+```
+
+### Load data
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
+train.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+test.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+train <- read.csv(train.url, header = T, sep = ",")
+test <- read.csv(test.url, header = T, sep = ",")
+```
+
+### Split sub train/test
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+inSplit <- createDataPartition(train$classe, p = .7 , list = F)
+training <- train[inSplit,]
+testing <- train[-inSplit,]
+```
+
+## Adjust data for machine learning process
+- Partition of data into training and testing set, respectively 70%/30%
+- Removal of near zero values and manual unnecessary variables 
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+### Filter out garbage data
+# Drop columns with NAs
+training <- training[, colSums(is.na(training)) == 0] 
+testing <- testing[, colSums(is.na(testing)) == 0] 
+## Detect useful data with no nearZero values
+nearZero <- nearZeroVar(training, saveMetrics = T) ## All variables have multiple distinct values
+nearZero <- rownames(nearZero)[nearZero$nzv == FALSE]
+## Remove garbage data
+training <- training[, (names(training) %in% nearZero)]
+testing <- testing[, (names(testing) %in% nearZero)]
+## Manually remove unnecessary variables
+training <- training[, -c(1,2,5,6)]
+testing <- testing[, -c(1,2,5,6)]
+```
+
+### Explore class variable across data set
+- Quick identification of the "classe" variable frequencies
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = training, aes(x=classe)) + 
+    geom_histogram(stat = "count") +
+    theme_minimal()
+```
+
+### Apply decision tree model
+- Application of decision tree model
+- Identification of its accuracy
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
+set.seed(123)
+dtFit <- train(classe ~ ., data=training, method="rpart")
+prp(dtFit$finalModel, type = 4, extra = 101, leaf.round = 1, fallen.leaves = TRUE,
+    varlen = 0, tweak = 1)
+dtPred <- predict(dtFit,testing)
+dtConfMatrix <- confusionMatrix(as.factor(testing$classe), dtPred)
+dtConfMatrix
+```
+
+### Create a random forest model
+- Application of random forest model
+- Identification of its accuracy
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
+## Cross validation for 5 equal sub sized folders with averaged repeated process for 5 times
+set.seed(123)
+control.set <- trainControl(method="cv", 5)
+rfFit <- train(classe ~ ., data=training, method="rf",
+                  trControl=control.set, ntree=251)
+rfPred <- predict(rfFit, testing)
+rfConfMatrix <- confusionMatrix(as.factor(testing$classe), rfPred)
+rfConfMatrix
+```
+
+## Accuracy
+- Out of the sample accuracy calculation
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
+## Overall agreement rate for 2 factor vectors
+accuracy <- postResample(training$classe, rfPred) ## Kappa value shows a fair/good agreement
+accuracy
+overall.outOfSample <- 1 - as.numeric(confusionMatrix(as.factor(testing$classe), rfPred)$overall[1])
+overall.outOfSample
+```
+
+# Apply prediction to test df
+- Application of efficient random forest model to the test set of 20 observations because of the best accuracy achieved.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+prediction <- predict(rfFit, test)
+prediction
+```
+
+```{r message=FALSE, warning=FALSE}
+# Representation of random forest final model with a more accurate presence of features
+# No able to represent it differently with the caret package, as the rpart package would freeze my laptop
+plot_rf_tree(rfFit$finalModel, 1, shorten_label = T)
+```
+
+# Citations
+
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
+Read more [here](http:/groupware.les.inf.puc-rio.br/har#related_publications#ixzz4TjqSxWDS).
