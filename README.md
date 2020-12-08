@@ -9,7 +9,7 @@ Exploratory Data Analysis | [Link](https://www.coursera.org/account/accomplishme
 Reproducible Research | [Link](https://www.coursera.org/account/accomplishments/certificate/ZDBNWWHTPA32)
 Statistical Inference | [Link](https://www.coursera.org/account/accomplishments/certificate/Z9SQJ4TNJ9XW) 
 Regression Models | [Link](https://www.coursera.org/account/accomplishments/certificate/7AUQYTNEE8LL)
-Practical Machine Learning | [Link]
+Practical Machine Learning | [Link](https://www.coursera.org/account/accomplishments/certificate/3V322NVXWUQG)
 Developing Data Products | [Link]
 Data Science Capstone | [Link]
 
