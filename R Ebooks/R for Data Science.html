@@ -1,4 +1,414 @@
-<html><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8" /><link href="style.css" rel="stylesheet" type="text/css" /><title>R Programming for Data Science</title></head><body><div dir="ltr" class="calibre" id="calibre_link-176">
+<html><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8" /><link href="style.css" rel="stylesheet" type="text/css" /><title>R Programming for Data Science</title>
+  <style>
+    @page {
+    margin-bottom: 5pt;
+    margin-top: 5pt
+    }
+
+.block-equation {
+    display: block;
+    height: auto;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0.5em;
+    max-width: 100%;
+    text-align: center;
+    width: 132px
+    }
+.block-equation1 {
+    display: block;
+    height: auto;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0.5em;
+    max-width: 100%;
+    text-align: center;
+    width: 129px
+    }
+.c {
+    -webkit-hyphens: none;
+    color: #408080;
+    font-family: monospace;
+    font-style: italic
+    }
+.calibre {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    display: block;
+    font-size: 1em;
+    hyphens: none;
+    margin-bottom: 0;
+    margin-left: 5pt;
+    margin-right: 5pt;
+    margin-top: 0;
+    orphans: 2;
+    padding-left: 0;
+    padding-right: 0;
+    widows: 2
+    }
+.calibre1 {
+    display: block;
+    font-family: sans-serif;
+    font-size: 1.41667em;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 0.83em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0.83em;
+    page-break-after: avoid
+    }
+.calibre2 {
+    display: block;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0.5em;
+    text-indent: 0
+    }
+.calibre3 {
+    display: block;
+    font-family: sans-serif;
+    font-weight: bold;
+    margin-bottom: 1.33em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 1.33em;
+    page-break-after: avoid
+    }
+.calibre4 {
+    height: auto;
+    max-width: 100%;
+    width: auto
+    }
+.calibre5 {
+    display: block
+    }
+.calibre6 {
+    display: block;
+    font-family: sans-serif;
+    font-size: 1.41667em;
+    font-variant: normal;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 0.83em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 1em;
+    page-break-after: avoid
+    }
+.calibre7 {
+    display: list-item;
+    font-size: 1.125em;
+    line-height: 1.2;
+    list-style-image: none;
+    list-style-position: outside;
+    list-style-type: none;
+    margin-bottom: 0.5em;
+    margin-left: 1em;
+    margin-top: 0.5em;
+    padding-left: 0
+    }
+.calibre8 {
+    line-height: 1.2
+    }
+.calibre9 {
+    display: block;
+    line-height: 1.2;
+    list-style-type: decimal;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0
+    }
+.calibre10 {
+    display: list-item;
+    font-size: 0.88889em;
+    list-style-image: none;
+    list-style-position: outside;
+    list-style-type: none;
+    margin-left: 1em;
+    padding-left: 0
+    }
+.calibre11 {
+    -webkit-hyphens: none;
+    font-family: monospace;
+    line-height: 1.2
+    }
+.calibre12 {
+    display: none
+    }
+.calibre13 {
+    display: block;
+    list-style-type: decimal;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 1em
+    }
+.calibre14 {
+    display: list-item
+    }
+.calibre15 {
+    display: block;
+    font-family: sans-serif;
+    font-size: 1.41667em;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 10%;
+    page-break-after: avoid
+    }
+.calibre16 {
+    font-weight: bold
+    }
+.calibre17 {
+    font-style: italic
+    }
+.calibre18 {
+    display: block;
+    margin-bottom: 1.5em;
+    margin-left: 2em;
+    margin-right: 0;
+    margin-top: 1.5em
+    }
+.calibre19 {
+    display: block;
+    font-family: sans-serif;
+    font-size: 1.125em;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 0.25em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 1em;
+    page-break-after: avoid
+    }
+.calibre20 {
+    display: block;
+    list-style-type: disc;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 1em
+    }
+.calibre21 {
+    -webkit-hyphens: none;
+    font-family: monospace
+    }
+.calibre22 {
+    display: block;
+    font-family: monospace;
+    margin-bottom: 0.5em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0.5em;
+    white-space: pre-wrap
+    }
+.calibre23 {
+    border-collapse: collapse;
+    border-spacing: 2px;
+    display: table;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    page-break-inside: avoid;
+    text-indent: 0;
+    width: 90%
+    }
+.calibre24 {
+    border-bottom-color: currentColor;
+    border-bottom-style: solid;
+    border-bottom-width: thin;
+    display: table-header-group;
+    vertical-align: middle
+    }
+.calibre25 {
+    display: table-row;
+    page-break-inside: avoid;
+    vertical-align: inherit
+    }
+.calibre26 {
+    display: table-cell;
+    font-weight: bold;
+    padding-bottom: 1px;
+    padding-left: 1px;
+    padding-right: 10px;
+    padding-top: 1px;
+    text-align: left;
+    vertical-align: inherit
+    }
+.calibre27 {
+    display: table-row-group;
+    padding-bottom: 40px;
+    vertical-align: middle
+    }
+.calibre28 {
+    display: table-cell;
+    padding-bottom: 1px;
+    padding-left: 1px;
+    padding-right: 10px;
+    padding-top: 1px;
+    text-align: inherit;
+    vertical-align: inherit
+    }
+.calibre29 {
+    font-size: 0.75em;
+    line-height: normal;
+    vertical-align: super
+    }
+.calibre30 {
+    background-color: rgb(255, 255, 255);
+    border-bottom-color: rgb(200, 200, 200);
+    border-bottom-style: solid;
+    border-bottom-width: thin;
+    border-left-color: rgb(200, 200, 200);
+    border-left-style: solid;
+    border-left-width: thin;
+    border-right-color: rgb(200, 200, 200);
+    border-right-style: solid;
+    border-right-width: thin;
+    border-top-color: rgb(200, 200, 200);
+    border-top-style: solid;
+    border-top-width: thin;
+    font-size: 0.75em;
+    margin-bottom: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+    margin-top: 1em;
+    padding-bottom: 1em;
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+    padding-top: 1em
+    }
+.calibre31 {
+    display: inline-block;
+    height: auto;
+    max-width: 100%;
+    width: 100%
+    }
+.calibre32 {
+    font-size: 0.75em;
+    font-weight: bold;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    page-break-before: avoid;
+    text-align: center;
+    text-indent: 0
+    }
+.calibre33 {
+    display: block;
+    width: 100%
+    }
+.code {
+    font-size: 0.75em;
+    margin-bottom: 1.5em;
+    margin-left: 0;
+    margin-top: 1em
+    }
+.err {
+    -webkit-hyphens: none;
+    color: #F00;
+    font-family: monospace
+    }
+.figure-wrapper {
+    display: block;
+    text-align: center
+    }
+.highlight {
+    -webkit-hyphens: none;
+    display: block
+    }
+.image {
+    display: inline-block;
+    margin-inline-end: 0;
+    margin-inline-start: 0;
+    max-width: 90%;
+    text-align: center;
+    width: 468px
+    }
+.image1 {
+    display: inline-block;
+    margin-inline-end: 0;
+    margin-inline-start: 0;
+    max-width: 90%;
+    text-align: center;
+    width: 467px
+    }
+.image2 {
+    display: inline-block;
+    margin-inline-end: 0;
+    margin-inline-start: 0;
+    max-width: 90%;
+    text-align: center;
+    width: 447px
+    }
+.inline-equation {
+    height: 1em;
+    max-width: 100%;
+    vertical-align: baseline;
+    width: auto
+    }
+.kc {
+    -webkit-hyphens: none;
+    color: #008000;
+    font-family: monospace;
+    font-weight: 600
+    }
+.kp {
+    -webkit-hyphens: none;
+    color: #008000;
+    font-family: monospace
+    }
+.kt {
+    -webkit-hyphens: none;
+    color: #B00040;
+    font-family: monospace
+    }
+.o {
+    -webkit-hyphens: none;
+    color: #666;
+    font-family: monospace
+    }
+.s {
+    -webkit-hyphens: none;
+    color: #BA2121;
+    font-family: monospace
+    }
+.section-number {
+    font-weight: bold;
+    line-height: 1.2
+    }
+.toc {
+    display: block;
+    list-style-type: decimal;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0
+    }
+  </style>
+  </head><body><div dir="ltr" class="calibre" id="calibre_link-176">
   <h2 class="calibre1">R Programming for Data Science</h2>
 
   <p class="calibre2">&nbsp;</p>
