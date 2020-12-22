@@ -1,15 +1,15 @@
 # Data Science Specialization | John Hopkins Coursera
 
-Course | Certificate | eBook
---- | --- | ---
-The Data Scientist’s Toolbox | [Link](https://www.coursera.org/account/accomplishments/verify/B5CDAAH836UW) | [R for data science](https://r4ds.had.co.nz/)
-R Programming | [Link](https://www.coursera.org/account/accomplishments/verify/WJH5PTDX7VJA) | [R programming for data science](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/rprogramming.html)
-Getting and Cleaning Data | [Link](https://www.coursera.org/account/accomplishments/verify/JZ7AZ2T327R8) | [R Programming for Research](https://geanders.github.io/RProgrammingForResearch/)
-Exploratory Data Analysis | [Link](https://www.coursera.org/account/accomplishments/certificate/DVSKLK3CD2X4) | [Exploratory data analysis with R](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/exdata.html)
-Reproducible Research | [Link](https://www.coursera.org/account/accomplishments/certificate/ZDBNWWHTPA32) | [Report writing for data science in R](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/reportwriting.html)
-Statistical Inference | [Link](https://www.coursera.org/account/accomplishments/certificate/Z9SQJ4TNJ9XW) | [Statistical inference for data science](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/LittleInferenceBook.html)
-Regression Models | [Link](https://www.coursera.org/account/accomplishments/certificate/7AUQYTNEE8LL) | [Regression models for data science in R](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/regmods.html)
-Practical Machine Learning | [Link](https://www.coursera.org/account/accomplishments/certificate/3V322NVXWUQG) | [Hands-On Machine Learning with R](https://bradleyboehmke.github.io/HOML/)
+Course | Certificate | eBook | R Examples
+--- | --- | --- | ---
+The Data Scientist’s Toolbox | [Link](https://www.coursera.org/account/accomplishments/verify/B5CDAAH836UW) | [R for data science](https://r4ds.had.co.nz/) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/1_DATASCITOOLBOX/Data_Scientists_Toolbox_Course_Notes.html)
+R Programming | [Link](https://www.coursera.org/account/accomplishments/verify/WJH5PTDX7VJA) | [R programming for data science](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/rprogramming.html) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/2_RPROG/R_Programming_Course_Notes.html)
+Getting and Cleaning Data | [Link](https://www.coursera.org/account/accomplishments/verify/JZ7AZ2T327R8) | [R Programming for Research](https://geanders.github.io/RProgrammingForResearch/) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/3_GETDATA/Getting_and_Cleaning_Data_Course_Notes.html)
+Exploratory Data Analysis | [Link](https://www.coursera.org/account/accomplishments/certificate/DVSKLK3CD2X4) | [Exploratory data analysis with R](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/exdata.html) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/4_EXDATA/Exploratory_Data_Analysis_Course_Notes.html)
+Reproducible Research | [Link](https://www.coursera.org/account/accomplishments/certificate/ZDBNWWHTPA32) | [Report writing for data science in R](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/reportwriting.html) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/5_REPDATA/Reproducible_Research_Course_Notes.html)
+Statistical Inference | [Link](https://www.coursera.org/account/accomplishments/certificate/Z9SQJ4TNJ9XW) | [Statistical inference for data science](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/LittleInferenceBook.html) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/6_STATINFERENCE/Statistical_Inference_Course_Notes.html)
+Regression Models | [Link](https://www.coursera.org/account/accomplishments/certificate/7AUQYTNEE8LL) | [Regression models for data science in R](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/regmods.html) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/7_REGMODS/Regression_Models_Course_Notes.html)
+Practical Machine Learning | [Link](https://www.coursera.org/account/accomplishments/certificate/3V322NVXWUQG) | [Hands-On Machine Learning with R](https://bradleyboehmke.github.io/HOML/) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/8_PREDMACHLEARN/Practical_Machine_Learning_Course_Notes.html)
 Developing Data Products | [Link]
 Data Science Capstone | [Link]
 
