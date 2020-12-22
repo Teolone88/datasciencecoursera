@@ -10,7 +10,7 @@ Reproducible Research | [Link](https://www.coursera.org/account/accomplishments/
 Statistical Inference | [Link](https://www.coursera.org/account/accomplishments/certificate/Z9SQJ4TNJ9XW) | [Statistical inference for data science](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/LittleInferenceBook.html) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/6_STATINFERENCE/Statistical_Inference_Course_Notes.html)
 Regression Models | [Link](https://www.coursera.org/account/accomplishments/certificate/7AUQYTNEE8LL) | [Regression models for data science in R](https://htmlpreview.github.io/?https://github.com/Teolone88/datasciencecoursera/blob/master/ePubs/regmods.html) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/7_REGMODS/Regression_Models_Course_Notes.html)
 Practical Machine Learning | [Link](https://www.coursera.org/account/accomplishments/certificate/3V322NVXWUQG) | [Hands-On Machine Learning with R](https://bradleyboehmke.github.io/HOML/) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/8_PREDMACHLEARN/Practical_Machine_Learning_Course_Notes.html)
-Developing Data Products | [Link]
+Developing Data Products | [Link] | [Link] | [Link](http://sux13.github.io/DataScienceSpCourseNotes/9_DEVDATAPROD/Developing_Data_Products_Course_Notes.html)
 Data Science Capstone | [Link]
 
 
