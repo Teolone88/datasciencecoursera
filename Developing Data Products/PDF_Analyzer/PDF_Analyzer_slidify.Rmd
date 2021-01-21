@@ -1,0 +1,557 @@
+---
+title: "PDF Analyzer"
+author: "Teo Lo Piparo"
+date: "21/1/2021"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Purpose
+
+The application serves as a enhancing tool for pdf reading by digesting all the text present in the document and returning friendly visualizations on trends, emotions and matching features.
+
+The scope is to alleviate the discovery phase of many pdf documents by simply loading and visualize the content.
+
+**Vademecum**
+
+1) Upload pdf
+2) Open the `Summary`
+3) Navigate all the available tabs
+4) Enjoy the results
+5) Open `Search n Filter`
+6) Explore the text individually
+
+**E.g. applications:**
+    
+- Discovery of eBook contents for casual reading purposes
+- Analysis of cover letters or curriculums for better digital comprehension
+- ...
+
+## Libraries necessary
+
+```{r echo=T,message=F, warning=F, eval=FALSE}
+# For the creation of packaging of the app
+library(shiny)
+library(shinydashboard)
+library(shinythemes)
+# For the reading of the pdf document
+library(pdftools)
+# For the manipulation of character objects
+library(stringr)
+library(stringi)
+# For the manipulation and mining of text
+library(tm)
+# For the visualization of graphs
+library(ggplot2)
+# For the piping of scripts
+library(dplyr)
+# For the creation of word clouds graphs
+library(wordcloud)
+# For the visualization of plotly graphs
+library(plotly)
+# For the creation of data.table objects
+library(DT)
+# To fix tm package features on the corpora reading
+library(SnowballC)
+# For the sentiment analysis
+library(syuzhet)
+# For the creation patterns of color in the graphs
+library(RColorBrewer)
+# For the matching of geo data in the corpora
+library(countrycode)
+# To fix some html parsing
+library(shinycssloaders)
+```
+
+## User Interface
+
+```{r echo=T,message=F, warning=F, eval=FALSE}
+dashboardPage(skin="blue",
+              dashboardHeader(title="PDF Analyzer",titleWidth=300),
+              dashboardSidebar(width=250,
+                               sidebarMenu(
+                                   br(),
+                                   menuItem(tags$em("Upload PDFs",style="font-size:150%"),icon=icon("upload"),tabName="data"),
+                                   menuItem(tags$em("Summaries",style="font-size:150%"),icon=icon("bar-chart-o"),tabName="summary"),
+                                   menuItem(tags$em("Search n Filter",style="font-size:150%"),icon=icon("search"),tabName="search")
+                               )
+              ),
+              dashboardBody(
+                  tabItems(
+                      tabItem(tabName="data",
+                              br(),
+                              br(),
+                              tags$h4("A PDF document is not so great in terms of searching and indexing, especially if you
+                                      are a collector of eBooks."),
+                              tags$h4("This application helps to get useful insights from PDF documents 
+                           by creating visualizations and summarizations. It also enables searching, sorting and filtering."),
+                           
+                           tags$h4("I personally use it for reviewing eBooks previews from the open library (https://openlibrary.org/)
+                                       or for review my CVs or cover letters but go wild."),
+                           
+                           tags$h4("Upload PDF documents (books, journals, surveys, etc.), then go to the", tags$span("Summaries",style="color:red"), tags$span("section in the sidebar to get summaries of the uploaded documents.
+                              We can search one or more terms and see their distribution across the uploaded documents in 
+                              the" , tags$span("Search n Filter",style="color:red"), tags$span("menu item. We can also filter to display words with certain frequency range only."))),
+                           br(),
+                           br(),
+                           br(),
+                           
+                           column(width = 4,
+                                  fileInput('file1', em('Choose PDF File',style="text-align:center;color:red;font-size:120%"),multiple = TRUE,
+                                            accept=c('.pdf')),
+                                  
+                                  br(),
+                                  br(),
+                                  br(),
+                                  br()
+                           ),
+                           br()
+                      ),
+                      tabItem(tabName="summary",
+                              fluidRow(
+                                  tabBox(width=12,
+                                         tabPanel(tags$em("Word Cloud",style="font-size:150%"),
+                                                  
+                                                  column(width = 8,
+                                                         plotOutput("wordcloud", height = "700px")),
+                                                  column(width = 4,
+                                                         br(),
+                                                         uiOutput("minfreq"),
+                                                         br(),
+                                                         uiOutput("maxwords"),
+                                                         br(),
+                                                         uiOutput("forEach")) 
+                                         ),
+                                         tabPanel(tags$em("Plotly Bar graph",style="font-size:150%"),
+                                                  
+                                                  plotlyOutput("myplot",height = "700px"),
+                                                  br(),
+                                                  uiOutput("numwords")     
+                                         ),
+                                         tabPanel(tags$em("Sentiments",style="font-size:150%"),
+                                                  
+                                                  plotlyOutput("mysentiment",height = "700px")
+                                         ),
+                                         tabPanel(tags$em("Locations",style="font-size:150%"),
+                                                  DT::dataTableOutput("DataTable2")
+                                         )
+                                  ))),
+                      tabItem(tabName="search",
+                              DT::dataTableOutput("DataTable"),
+                              br(),
+                              uiOutput("text"),
+                              uiOutput('forsearch'),
+                              uiOutput('searchbutton'),
+                              plotlyOutput("searched",height = '600px')  
+                      )
+                  )))
+```
+
+## Server
+```{r echo=T,message=F, warning=F, eval=FALSE}
+shinyServer(function(input, output) {
+    options(shiny.maxRequestSize = 800 * 1024 ^ 2)
+    mypdf2_list <- reactive({
+        inFile <- input$file1
+        if (is.null(inFile)) {
+            return(NULL)
+        } else{
+            withProgress({
+                setProgress(message = "Extracting Text...")
+                lst = list()
+                for (i in 1:length(inFile[, 1])) {
+                    lst[[i]] <- pdf_text(inFile[[i, 'datapath']])
+                }
+                lst
+            })
+        }
+    })
+    documents <- reactive({
+        inFile <- input$file1
+        #if (is.null(inFile))
+        #return(NULL)
+        # c(unlist(strsplit(input$link,",")),inFile$name)
+        inFile$name
+    })
+    mymatrix <- reactive({
+        withProgress({
+            setProgress(message = "Processing corpus...")
+            #txt=c(unlist(mypdf1_list()), unlist(mypdf2_list()))
+            txt = c(unlist(mypdf2_list()))
+            if (is.null(txt))
+                return(NULL)
+            # Create corpus
+            corpus = VCorpus(VectorSource(txt))
+            # Convert to lower-case
+            corpus = tm_map(corpus, tolower)
+            corpus = tm_map(corpus, PlainTextDocument)
+            corpus = tm_map(corpus, removePunctuation)
+            # Remove stopwords
+            corpus = tm_map(corpus, function(x)
+                removeWords(x, stopwords("english")))
+            frequencies = DocumentTermMatrix(corpus)
+            # sparse = removeSparseTerms(frequencies,0.9)
+            #sparse =as.matrix(sparse)
+            sparse = as.matrix(frequencies)
+            sparse = apply(sparse, 2, sum)
+            sparse = sparse[order(sparse, decreasing = T)]
+            Term = names(sparse)
+            Frequency = as.vector(sparse)
+            sparse = as.data.frame(list(Term = Term, Frequency = Frequency))
+            sparse$Term = stri_trans_totitle(sparse$Term)
+            sparse
+        })
+    })
+    output$DataTable <- DT::renderDataTable(withProgress({
+        setProgress(message = "Preparing Table...")
+        datatable(
+            mydataTable(),
+            filter = 'top',
+            options = list(pageLength = 5, autoWidth = TRUE),
+            rownames = FALSE
+        )
+    }))
+    
+    output$DataTable2 <- DT::renderDataTable(withProgress({
+        setProgress(message = "It might take a while, if the text is large...")
+        datatable(
+            mylocationTable(),
+            filter = 'top',
+            options = list(pageLength = 5, autoWidth = TRUE),
+            rownames = FALSE
+        )
+    }))
+    
+    mydataTable <- reactive({
+        withProgress({
+            setProgress(message = "Computing...")
+            if (is.null(mymatrix()))
+                return(NULL)
+            #pdfs=c(mypdf1_list(), mypdf2_list())
+            pdfs = mypdf2_list()
+            if (length(pdfs) > 0) {
+                documents = documents()
+                mydata = data.frame()
+                for (i in 1:length(pdfs)) {
+                    txt = pdfs[[i]]
+                    # Create corpus
+                    corpus = VCorpus(VectorSource(txt))
+                    # Convert to lower-case
+                    corpus = tm_map(corpus, tolower)
+                    corpus = tm_map(corpus, PlainTextDocument)
+                    corpus = tm_map(corpus, removePunctuation)
+                    # Remove stopwords
+                    corpus = tm_map(corpus, function(x)
+                        removeWords(x, stopwords("english")))
+                    frequencies = DocumentTermMatrix(corpus)
+                    #sparse = removeSparseTerms(frequencies,1)
+                    sparse = as.matrix(frequencies)
+                    sparse = apply(sparse, 2, sum)
+                    sparse = sparse[order(sparse, decreasing = T)]
+                    Term = names(sparse)
+                    Frequency = as.vector(sparse)
+                    sparse = as.data.frame(list(Term = Term, Frequency =
+                                                    Frequency))
+                    sparse$Term = stri_trans_totitle(sparse$Term)
+                    sparse$Document = documents[i]
+                    mydata = rbind(mydata, sparse)
+                }
+                mydata = mydata %>% mutate(Term = factor(Term, levels = Term[order(Frequency, decreasing =
+                                                                                       T)]))
+                if (nrow(mydata) > 7000) {
+                    head(mydata, 7000)
+                } else{
+                    mydata
+                }
+            }
+        })
+    })
+    
+    mylocationTable <- reactive({
+        withProgress({
+            setProgress(message = "Computing...")
+            if (is.null(mymatrix()))
+                return(NULL)
+            #pdfs=c(mypdf1_list(), mypdf2_list())
+            pdfs = mypdf2_list()
+            if (length(pdfs) > 0) {
+                documents = documents()
+                mydata = data.frame()
+                for (i in 1:length(pdfs)) {
+                    txt = pdfs[[i]]
+                    # Create corpus
+                    corpus = VCorpus(VectorSource(txt))
+                    # Convert to lower-case
+                    corpus = tm_map(corpus, tolower)
+                    corpus = tm_map(corpus, PlainTextDocument)
+                    corpus = tm_map(corpus, removePunctuation)
+                    # Remove stopwords
+                    corpus = tm_map(corpus, function(x)
+                        removeWords(x, stopwords("english")))
+                    frequencies = DocumentTermMatrix(corpus)
+                    #sparse = removeSparseTerms(frequencies,1)
+                    sparse = as.matrix(frequencies)
+                    sparse = apply(sparse, 2, sum)
+                    sparse = sparse[order(sparse, decreasing = T)]
+                    Term = names(sparse)
+                    Frequency = as.vector(sparse)
+                    sparse = as.data.frame(list(Term = Term, Frequency =
+                                                    Frequency))
+                    sparse$Term = stri_trans_totitle(sparse$Term)
+                }
+                mydata = codes=sparse$Term
+                codes=codes[!is.na(countrycode(codes, "country.name", "continent",warn = F))]
+                table=data.frame("countries" = codes, "n" = 1)
+                if (nrow(table) > 100) {
+                    head(table, 100)
+                } else{
+                    table
+                }
+            }
+        })
+    })
+    output$wordcloud <- renderPlot({
+        if (is.null(mymatrix()))
+            return(NULL)
+        sparse = mymatrix()
+        pal2 <- brewer.pal(8, "Dark2")
+        wordcloud(
+            sparse$Term,
+            sparse$Frequency,
+            min.freq = input$freq,
+            max.words = input$max,
+            random.order = FALSE,
+            scale = c(4, 0.5),
+            rot.per = 0.35,
+            use.r.layout = FALSE,
+            colors = pal2
+        )
+        if (input$for_each == TRUE) {
+            if (is.null(mymatrix()))
+                return(NULL)
+            #pdfs=c(mypdf1_list(), mypdf2_list())
+            pdfs = mypdf2_list()
+            if (length(pdfs) > 0) {
+                for (i in 1:length(pdfs)) {
+                    txt = pdfs[[i]]
+                    # Create corpus
+                    corpus = VCorpus(VectorSource(txt))
+                    # Convert to lower-case
+                    corpus = tm_map(corpus, tolower)
+                    corpus = tm_map(corpus, PlainTextDocument)
+                    corpus = tm_map(corpus, removePunctuation)
+                    # Remove stopwords
+                    corpus = tm_map(corpus, function(x)
+                        removeWords(x, stopwords("english")))
+                    frequencies = DocumentTermMatrix(corpus)
+                    #sparse = removeSparseTerms(frequencies,1)
+                    sparse = as.matrix(frequencies)
+                    sparse = apply(sparse, 2, sum)
+                    sparse = sparse[order(sparse, decreasing = T)]
+                    Term = names(sparse)
+                    Frequency = as.vector(sparse)
+                    sparse = as.data.frame(list(Term = Term, Frequency =
+                                                    Frequency))
+                    sparse$Term = stri_trans_totitle(sparse$Term)
+                    pal2 <- brewer.pal(8, "Dark2")
+                    documents = documents()
+                    x11(title = documents[i])
+                    wordcloud(
+                        sparse$Term,
+                        sparse$Frequency,
+                        min.freq = input$freq,
+                        max.words = input$max,
+                        random.order = FALSE,
+                        scale = c(4, 0.5),
+                        rot.per = 0.35,
+                        use.r.layout = FALSE,
+                        colors = pal2
+                    )
+                }
+            }
+        }
+    })
+    toshow <- reactive({
+        input$show
+    })
+    output$myplot <- renderPlotly({
+        if (is.null(mymatrix()))
+            return(NULL)
+        maximum = toshow()
+        sparse = mymatrix()
+        sparse = sparse[1:maximum, ]
+        q = sparse %>% mutate(Term = factor(Term, levels = Term[order(Frequency, decreasing =
+                                                                          F)])) %>%
+            ggplot(aes(x = Term, y = Frequency)) + geom_bar(stat = 'identity',
+                                                            color = '#c2c2a3',
+                                                            fill = '#b35900') +
+            xlab("") + ggtitle('Most frequent words') + theme(plot.title = element_text(size = 16, colour =
+                                                                                            "blue")) +
+            coord_flip()# +theme(axis.text.x = element_text(angle=-90))
+        p <- ggplotly(q + ylab(" ") + xlab(" "))
+        x <- list(title = "Frequency")
+        y <- list(title = "")
+        p %>% layout(xaxis = x, yaxis = y)
+    })
+    
+    output$mysentiment <- renderPlotly({
+        if (is.null(mymatrix()))
+            return(NULL)
+        d = get_nrc_sentiment(unlist(mypdf2_list()))
+            #transpose
+            td<-data.frame(t(d))
+        #The function rowSums computes column sums across rows for each level of a grouping variable.
+        td_new <- data.frame(rowSums(td))
+        #Transformation and cleaning
+        names(td_new)[1] <- "count"
+        td_new <- cbind("sentiment" = rownames(td_new), td_new)
+        rownames(td_new) <- NULL
+        td_new2<-td_new[1:8,]
+        #Plot One - count of words associated with each sentiment
+        quickplot(sentiment, data=td_new2, weight=count, geom="bar", fill=sentiment, ylab="count")+ggtitle("Text emotions")
+    })
+
+    mysearch <- reactive({
+        input$search
+        isolate(stri_trans_totitle(input$searchText))
+    })
+    SearchMatrix <- reactive({
+        if (is.null(mysearch()))
+            return(NULL)
+        if (is.null(mymatrix()))
+            return(NULL)
+        #pdfs=c(mypdf1_list(), mypdf2_list())
+        pdfs = mypdf2_list()
+        if (length(pdfs) > 0) {
+            mm = data.frame()
+            for (i in 1:length(pdfs)) {
+                txt = pdfs[[i]]
+                # Create corpus
+                corpus = VCorpus(VectorSource(txt))
+                # Convert to lower-case
+                corpus = tm_map(corpus, tolower)
+                corpus = tm_map(corpus, PlainTextDocument)
+                corpus = tm_map(corpus, removePunctuation)
+                # Remove stopwords
+                corpus = tm_map(corpus, function(x)
+                    removeWords(x, stopwords("english")))
+                frequencies = DocumentTermMatrix(corpus)
+                #sparse = removeSparseTerms(frequencies,1)
+                sparse = as.matrix(frequencies)
+                sparse = apply(sparse, 2, sum)
+                sparse = sparse[order(sparse, decreasing = T)]
+                Term = names(sparse)
+                Frequency = as.vector(sparse)
+                sparse = as.data.frame(list(Term = Term, Frequency = Frequency))
+                sparse$Term = stri_trans_totitle(sparse$Term)
+                if (stri_trans_totitle(mysearch()) %in% sparse$Term == TRUE) {
+                    total = filter(sparse,
+                                   Term == stri_trans_totitle(mysearch()))$Frequency
+                } else{
+                    total = 0
+                }
+                mm = rbind(mm, total)
+            }
+            Documents = documents()
+            names(mm) = c('Frequency')
+            mm = cbind(Documents, mm)
+            mm
+        }
+    })
+    output$searched <- renderPlotly({
+        if (is.null(SearchMatrix()))
+            return(NULL)
+        if (nchar(mysearch()) == 0)
+            return(NULL)
+        mm = SearchMatrix()
+        q = mm %>% mutate(Documents = factor(Documents, levels = Documents[order(Frequency, decreasing =
+                                                                                     T)])) %>%
+            ggplot(aes(x = Documents, y = Frequency)) + geom_bar(
+                stat = 'identity',
+                color = '#c2c2a3',
+                fill = '#999966',
+                width = .5
+            ) +
+            xlab("") + ggtitle('Search Term Frequency by Document') + ylab('') +
+            theme(axis.text.x = element_text(angle = -20)) +
+            theme(plot.title = element_text(size = 16, colour = "blue")) +
+            theme(axis.text.x = element_text(colour = "#4d0000", size =
+                                                 12))
+        p = ggplotly(q)
+        p
+    })
+    output$minfreq = renderUI({
+        if (is.null(mymatrix()))
+            return(NULL)
+        sliderInput(
+            "freq",
+            em("Minimum Frequency:", style = "color:black;font-size:100%"),
+            min = 1,
+            max = 50,
+            value = 15
+        )
+    })
+    output$numwords = renderUI({
+        if (is.null(mymatrix()))
+            return(NULL)
+        sliderInput(
+            "show",
+            em("Number of Words to Display:", style = "color:Blue;font-size:100%"),
+            min = 5,
+            max = 50,
+            value = 25
+        )
+    })
+    
+    output$maxwords = renderUI({
+        if (is.null(mymatrix()))
+            return(NULL)
+        sliderInput(
+            "max",
+            em("Maximum Number of Words:", style = "color:black;font-size:100%"),
+            min = 1,
+            max = 300,
+            value = 200
+        )
+    })
+    output$forEach = renderUI({
+        if (is.null(mymatrix()))
+            return(NULL)
+        checkboxInput(
+            "for_each",
+            label = p("Create Word Cloud for Each Document", style = "color:#ff0000;font-size:120%")
+        )
+    })
+    output$forsearch = renderUI({
+        if (is.null(mymatrix()))
+            return(NULL)
+        sidebarSearchForm(label = "Search...", textId = "searchText", "searchButton")
+    })
+    output$text = renderUI({
+        if (!is.null(mymatrix())) {
+            p(
+                "Search a word and you will see a bar graph of its frequency across all documents",
+                style = "text-align:center;color:#990099;font-size:110%"
+            )
+        }
+    })
+    output$searchbutton = renderUI({
+        if (is.null(mymatrix()))
+            return(NULL)
+        actionButton("search", "Search")
+    })
+})
+```
+
+## Where to find
+
+The application is publisged on <https://www.shinyapps.io> and can be accessed on this [link](http://teo-lopiparo.shinyapps.io/PDF_Analyzer)
+
+A special thanx goes to [Fisseha Berhane](https://github.com/fissehab) that allowed me to enhance the application.
+
+The raw code can be find [here](https://github.com/Teolone88/datasciencecoursera/tree/master/Developing%20Data%20Products/PDF_Analyzer) 
+
+**Thank you for your attention.**
