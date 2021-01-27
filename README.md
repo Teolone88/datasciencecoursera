@@ -13,6 +13,11 @@ Practical Machine Learning | [Link](https://www.coursera.org/account/accomplishm
 Developing Data Products | [Link](https://www.coursera.org/account/accomplishments/certificate/E4H3S49M6NG8) | [Web Applications with R, plotly, and shiny](https://plotly-r.com/index.html) <br> [Web Applications with Shiny and SQL Server](https://bookdown.org/msharkey3434/ShinyDB_Book/) <br> [Shiny Applications Tutorial](https://bookdown.org/hadrien/how_to_build_a_shiny_app_from_scratch/) | [Link](http://sux13.github.io/DataScienceSpCourseNotes/9_DEVDATAPROD/Developing_Data_Products_Course_Notes.html)
 Data Science Capstone | [Link]
 
+# Explainable Machine Learning with LIME and H2O in R | Coursera Project Network
+Course | Certificate | eBook | R Examples
+--- | --- | --- | ---
+Explainable Machine Learning with LIME and H2O in R | [Link](https://www.coursera.org/account/accomplishments/certificate/YKJF9G5XQYVQ) | [H2o](http://docs.h2o.ai/h2o/latest-stable/h2o-docs/welcome.html)<br>[Lime](https://uc-r.github.io/lime)  | 
+
 
 ## Author
 Github Username | Profile Page | LinkedIn
